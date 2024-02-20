@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.example.lozachat.R;
 import com.example.lozachat.databinding.ActivitySignInBinding;
 
 public class SignInActivity extends AppCompatActivity {
@@ -23,4 +22,5 @@ public class SignInActivity extends AppCompatActivity {
     private void setListeners() {
         binding.textCreateNewAccount.setOnClickListener(v -> startActivity(new Intent(getApplicationContext(), SignUpActivity.class)));
     }
+
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "875610319017",
+    "project_id": "lozachat-ef383",
+    "storage_bucket": "lozachat-ef383.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:875610319017:android:e6f986d83e571b33d4e1b8",
+        "android_client_info": {
+          "package_name": "com.example.lozachat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYSy9C5Ty1MUfgVw1_WwTbXgrWT1j09XE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

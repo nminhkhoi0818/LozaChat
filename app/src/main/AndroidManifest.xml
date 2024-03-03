@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LozaChat"
         tools:targetApi="31">
-        <activity android:name=".activities.SignInActivity"
+        <activity android:name=".activities.WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +24,10 @@
         </activity>
         <activity
             android:name=".activities.SignUpActivity"
-            android:exported="true" android:windowSoftInputMode="adjustResize"/>
+            android:exported="true" android:windowSoftInputMode="adjustResize" android:parentActivityName=".activities.WelcomeActivity"/>
+        <activity
+            android:name=".activities.SignInActivity"
+            android:exported="true" android:windowSoftInputMode="adjustResize" android:parentActivityName=".activities.WelcomeActivity"/>
         <activity android:name=".activities.MainActivity" android:exported="true"/>
         <service
             android:name=".firebase.MessagingService"

@@ -9,6 +9,6 @@
     <color name="icon_background">#20FFFFFF</color>
     <color name="error">#B00020</color>
     <color name="received_message_background">#090D16</color>
-    <color name="blue_text">#387ADF</color>
-    <color name="grey">#B4B4B8</color>
+    <color name="blue_main">#387ADF</color>
+    <color name="grey">#F6F5F5</color>
 </resources>

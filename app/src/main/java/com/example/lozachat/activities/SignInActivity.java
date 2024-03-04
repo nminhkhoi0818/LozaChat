@@ -45,6 +45,9 @@ public class SignInActivity extends AppCompatActivity {
                 signIn();
             }
         });
+        binding.backBtn.setOnClickListener(v -> {
+            onBackPressed();
+        });
     }
 
     private void signIn() {

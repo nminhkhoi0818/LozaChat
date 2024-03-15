@@ -18,10 +18,14 @@ import java.util.List;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
     private final List<User> users;
-    private final UserListener userListener;
+    private UserListener userListener = null;
     public UsersAdapter(List<User> users, UserListener userListener) {
         this.users = users;
         this.userListener = userListener;
+    }
+
+    public UsersAdapter(List<User> users) {
+        this.users = users;
     }
 
     @NonNull

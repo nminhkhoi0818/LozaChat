@@ -14,9 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LozaChat"
         tools:targetApi="31">
-        <activity
-            android:name=".activities.UsersActivity"
-            android:exported="false" />
+
         <activity
             android:name=".activities.WelcomeActivity"
             android:exported="true">
@@ -27,6 +25,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activities.UsersActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.SignUpActivity"
             android:exported="true"
             android:parentActivityName=".activities.WelcomeActivity"
@@ -35,6 +36,11 @@
             android:name=".activities.SignInActivity"
             android:exported="true"
             android:parentActivityName=".activities.WelcomeActivity"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".activities.ChatActivity"
+            android:exported="true"
+            android:parentActivityName=".activities.UsersActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.MainActivity"

@@ -35,7 +35,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
         binding.backBtn.setOnClickListener(v -> {
-            onBackPressed();
+            finish();
         });
     }
 
@@ -58,7 +58,6 @@ public class SignUpActivity extends AppCompatActivity {
                     preferenceManager.putString(Constants.KEY_USER_ID, documentReference.getId());
                     preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 })
                 .addOnFailureListener(exception -> {

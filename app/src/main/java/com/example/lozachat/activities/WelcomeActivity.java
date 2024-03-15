@@ -22,12 +22,10 @@ public class WelcomeActivity extends AppCompatActivity {
     private void setListeners() {
         binding.buttonSignUp.setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
         binding.textSignIn.setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
     }

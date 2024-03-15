@@ -1,5 +1,6 @@
 package com.example.lozachat.activities;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,7 +21,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class SignInActivity extends AppCompatActivity {
-
     private ActivitySignInBinding binding;
     private PreferenceManager preferenceManager;
 
@@ -28,12 +28,13 @@ public class SignInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preferenceManager = new PreferenceManager(getApplicationContext());
-//        if (preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
-//            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-//            startActivity(intent);
-//            finish();
-//        }
+        if (preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
+            Intent intent = new Intent(getApplicationContext(), UsersActivity.class);
+            startActivity(intent);
+            finish();
+        }
         binding = ActivitySignInBinding.inflate(getLayoutInflater());
+
         setContentView(binding.getRoot());
         setListeners();
     }
@@ -46,7 +47,7 @@ public class SignInActivity extends AppCompatActivity {
             }
         });
         binding.backBtn.setOnClickListener(v -> {
-            onBackPressed();
+            finish();
         });
     }
 
@@ -63,8 +64,7 @@ public class SignInActivity extends AppCompatActivity {
                         preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
                         preferenceManager.putString(Constants.KEY_USER_ID, documentSnapshot.getId());
                         preferenceManager.putString(Constants.KEY_NAME, documentSnapshot.getString(Constants.KEY_NAME));
-                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        Intent intent = new Intent(getApplicationContext(), UsersActivity.class);
                         startActivity(intent);
                     } else {
                         loading(false);

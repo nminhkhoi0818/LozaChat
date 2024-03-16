@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="Message"
-        android:icon="@drawable/ic_message" />
+        android:icon="@drawable/ic_message"
+        android:id="@+id/menu_message" />
     <item android:title="Contacts"
-        android:icon="@drawable/ic_person" />
+        android:icon="@drawable/ic_person"
+        android:id="@+id/menu_contacts" />
     <item android:title="Settings"
-        android:icon="@drawable/ic_settings" />
+        android:icon="@drawable/ic_settings"
+        android:id="@+id/menu_settings" />
 </menu>

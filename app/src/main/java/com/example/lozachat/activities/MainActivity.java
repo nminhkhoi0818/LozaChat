@@ -14,6 +14,7 @@ import com.example.lozachat.adapters.RecentConversationsAdapter;
 import com.example.lozachat.adapters.UsersAdapter;
 import com.example.lozachat.databinding.ActivityMainBinding;
 import com.example.lozachat.databinding.ActivityUsersBinding;
+import com.example.lozachat.listeners.ConversationListener;
 import com.example.lozachat.listeners.UserListener;
 import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.User;
@@ -33,7 +34,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements UserListener {
+public class MainActivity extends AppCompatActivity implements ConversationListener {
     private ActivityMainBinding binding;
     private PreferenceManager preferenceManager;
     private List<ChatMessage> conversations;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements UserListener {
 
     private void init() {
         conversations = new ArrayList<>();
-        conversationsAdapter = new RecentConversationsAdapter(conversations);
+        conversationsAdapter = new RecentConversationsAdapter(conversations, this);
         binding.conversationRecyclerView.setAdapter(conversationsAdapter);
         database = FirebaseFirestore.getInstance();
     }
@@ -172,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements UserListener {
     };
 
     @Override
-    public void onUserClicked(User user) {
+    public void OnConversationClicked(User user) {
         Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
         intent.putExtra(Constants.KEY_USER, user);
         startActivity(intent);

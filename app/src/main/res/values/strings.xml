@@ -13,4 +13,6 @@
     <string name="loza">Loza</string>
     <string name="select_user">Select User</string>
     <string name="online">Online</string>
+    <string name="contacts">Contacts</string>
+    <string name="home">Home</string>
 </resources>

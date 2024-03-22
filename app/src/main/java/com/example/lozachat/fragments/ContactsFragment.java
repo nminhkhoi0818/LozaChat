@@ -1,4 +1,4 @@
-package com.example.lozachat.activities;
+package com.example.lozachat.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.lozachat.activities.ChatActivity;
 import com.example.lozachat.adapters.RecentConversationsAdapter;
 import com.example.lozachat.adapters.UsersAdapter;
 import com.example.lozachat.databinding.FragmentContactsBinding;

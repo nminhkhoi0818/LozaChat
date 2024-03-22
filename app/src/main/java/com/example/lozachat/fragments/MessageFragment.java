@@ -1,4 +1,4 @@
-package com.example.lozachat.activities;
+package com.example.lozachat.fragments;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.lozachat.activities.ChatActivity;
 import com.example.lozachat.adapters.RecentConversationsAdapter;
 import com.example.lozachat.adapters.UsersAdapter;
 import com.example.lozachat.databinding.FragmentMessageBinding;

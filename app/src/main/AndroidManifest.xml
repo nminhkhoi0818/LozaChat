@@ -41,7 +41,7 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".activities.MessageFragment"
+            android:name=".fragments.MessageFragment"
             android:exported="false" />
 
 

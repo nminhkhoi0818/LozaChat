@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.lozachat.databinding.ActivitySignUpBinding;
+import com.example.lozachat.fragments.MessageFragment;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.firebase.firestore.FirebaseFirestore;

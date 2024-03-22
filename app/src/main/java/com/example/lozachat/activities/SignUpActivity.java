@@ -3,16 +3,21 @@ package com.example.lozachat.activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.lozachat.R;
 import com.example.lozachat.databinding.ActivitySignUpBinding;
 import com.example.lozachat.fragments.MessageFragment;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
 public class SignUpActivity extends AppCompatActivity {
@@ -51,6 +56,8 @@ public class SignUpActivity extends AppCompatActivity {
         user.put(Constants.KEY_NAME, binding.inputName.getText().toString());
         user.put(Constants.KEY_EMAIL, binding.inputEmail.getText().toString());
         user.put(Constants.KEY_PASSWORD, binding.inputPassword.getText().toString());
+        String encodedImage = getDefaultEncodedImage();
+        user.put(Constants.KEY_IMAGE, encodedImage);
         database.collection(Constants.KEY_COLLECTION_USERS)
                 .add(user)
                 .addOnSuccessListener(documentReference -> {
@@ -58,7 +65,8 @@ public class SignUpActivity extends AppCompatActivity {
                     preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
                     preferenceManager.putString(Constants.KEY_USER_ID, documentReference.getId());
                     preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
-                    Intent intent = new Intent(getApplicationContext(), MessageFragment.class);
+                    preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
                 })
                 .addOnFailureListener(exception -> {
@@ -66,7 +74,13 @@ public class SignUpActivity extends AppCompatActivity {
                     showToast(exception.getMessage());
                 });
     }
-
+    private String getDefaultEncodedImage() {
+        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.default_avatar);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); // bm is the bitmap object
+        byte[] b = baos.toByteArray();
+        return Base64.encodeToString(b, Base64.DEFAULT);
+    }
     private Boolean isValidSignUpDetails() {
         if (binding.inputName.getText().toString().trim().isEmpty()) {
             showToast("Enter your name");

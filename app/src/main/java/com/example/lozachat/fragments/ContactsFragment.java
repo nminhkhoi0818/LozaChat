@@ -11,11 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.lozachat.activities.ChatActivity;
-import com.example.lozachat.adapters.RecentConversationsAdapter;
-import com.example.lozachat.adapters.UsersAdapter;
+import com.example.lozachat.adapters.ContactUsersAdapter;
 import com.example.lozachat.databinding.FragmentContactsBinding;
 import com.example.lozachat.listeners.UserListener;
-import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.User;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
@@ -63,8 +61,8 @@ public class ContactsFragment extends Fragment implements UserListener {
                             users.add(user);
                         }
                         if (users.size() > 0) {
-                            UsersAdapter usersAdapter = new UsersAdapter(users, this);
-                            binding.usersRecyclerView.setAdapter(usersAdapter);
+                            ContactUsersAdapter contactUsersAdapter = new ContactUsersAdapter(users, this);
+                            binding.usersRecyclerView.setAdapter(contactUsersAdapter);
                             binding.usersRecyclerView.setVisibility(View.VISIBLE);
                         } else {
                             showErrorMessage();

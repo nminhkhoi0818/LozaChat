@@ -6,17 +6,14 @@ import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.lozachat.activities.ChatActivity;
 import com.example.lozachat.adapters.RecentConversationsAdapter;
-import com.example.lozachat.adapters.UsersAdapter;
 import com.example.lozachat.databinding.FragmentMessageBinding;
 import com.example.lozachat.listeners.ConversationListener;
-import com.example.lozachat.listeners.UserListener;
 import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.User;
 import com.example.lozachat.utilities.Constants;
@@ -24,7 +21,6 @@ import com.example.lozachat.utilities.PreferenceManager;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;

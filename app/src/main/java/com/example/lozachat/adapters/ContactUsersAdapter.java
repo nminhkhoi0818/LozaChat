@@ -4,34 +4,39 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lozachat.databinding.ItemContainerContactUserBinding;
 import com.example.lozachat.databinding.ItemContainerUserBinding;
 import com.example.lozachat.listeners.UserListener;
 import com.example.lozachat.models.User;
 
+import java.util.Comparator;
 import java.util.List;
 
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
+public class ContactUsersAdapter extends RecyclerView.Adapter<ContactUsersAdapter.UserViewHolder> {
     private final List<User> users;
     private UserListener userListener = null;
-    public UsersAdapter(List<User> users, UserListener userListener) {
+    public ContactUsersAdapter(List<User> users, UserListener userListener) {
         this.users = users;
+        this.users.sort(Comparator.comparing(obj -> obj.name.toLowerCase()));
         this.userListener = userListener;
     }
 
-    public UsersAdapter(List<User> users) {
+    public ContactUsersAdapter(List<User> users) {
         this.users = users;
+        this.users.sort(Comparator.comparing(obj -> obj.name.toLowerCase()));
     }
 
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemContainerUserBinding itemContainerUserBinding = ItemContainerUserBinding.inflate(
+        ItemContainerContactUserBinding itemContainerUserBinding = ItemContainerContactUserBinding.inflate(
                 LayoutInflater.from(parent.getContext()),
                 parent,
                 false
@@ -41,7 +46,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        holder.setUserData(users.get(position));
+        holder.setUserData(users.get(position), position);
     }
 
     @Override
@@ -50,15 +55,22 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     }
 
     class UserViewHolder extends RecyclerView.ViewHolder {
-        ItemContainerUserBinding binding;
-        UserViewHolder(ItemContainerUserBinding itemContainerUserBinding) {
-            super(itemContainerUserBinding.getRoot());
-            binding = itemContainerUserBinding;
+        ItemContainerContactUserBinding binding;
+        UserViewHolder(ItemContainerContactUserBinding ItemContainerContactUserBinding) {
+            super(ItemContainerContactUserBinding.getRoot());
+            binding = ItemContainerContactUserBinding;
         }
-        void setUserData(User user) {
+        void setUserData(User user, int position) {
             binding.textName.setText(user.name);
             binding.textEmail.setText(user.email);
             binding.imageProfile.setImageBitmap(getUserImage(user.image));
+
+            binding.header.setText(user.name.substring(0, 1).toUpperCase());
+            if (position > 0 && users.get(position - 1).name.substring(0, 1).equals(user.name.substring(0, 1))) {
+                binding.header.setVisibility(View.GONE);
+            } else {
+                binding.header.setVisibility(View.VISIBLE);
+            }
             binding.getRoot().setOnClickListener(v -> userListener.onUserClicked(user));
         }
     }

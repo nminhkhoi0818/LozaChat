@@ -1,7 +1,5 @@
 package com.example.lozachat.activities;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -10,15 +8,11 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.lozachat.R;
 import com.example.lozachat.databinding.ActivitySignInBinding;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 public class SignInActivity extends AppCompatActivity {
     private ActivitySignInBinding binding;
@@ -65,7 +59,7 @@ public class SignInActivity extends AppCompatActivity {
                         preferenceManager.putString(Constants.KEY_USER_ID, documentSnapshot.getId());
                         preferenceManager.putString(Constants.KEY_NAME, documentSnapshot.getString(Constants.KEY_NAME));
                         preferenceManager.putString(Constants.KEY_IMAGE, documentSnapshot.getString(Constants.KEY_IMAGE));
-                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), MessageFragment.class);
                         startActivity(intent);
                     } else {
                         loading(false);

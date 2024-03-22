@@ -1,16 +1,20 @@
 package com.example.lozachat.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Toast;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.example.lozachat.adapters.RecentConversationsAdapter;
 import com.example.lozachat.adapters.UsersAdapter;
-import com.example.lozachat.databinding.ActivityUsersBinding;
+import com.example.lozachat.databinding.FragmentContactsBinding;
 import com.example.lozachat.listeners.UserListener;
+import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.User;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
@@ -20,23 +24,18 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UsersActivity extends BaseActivity implements UserListener {
-    private ActivityUsersBinding binding;
+public class ContactsFragment extends Fragment implements UserListener {
+    FragmentContactsBinding binding;
     private PreferenceManager preferenceManager;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityUsersBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        preferenceManager = new PreferenceManager(getApplicationContext());
-        setListeners();
-        getUsers();
-    }
 
-    private void setListeners() {
-        binding.imageBack.setOnClickListener(v -> {
-            finish();
-        });
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentContactsBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
+        preferenceManager = new PreferenceManager(getContext());
+        getUsers();
+        return view;
     }
 
     private void getUsers() {
@@ -90,7 +89,7 @@ public class UsersActivity extends BaseActivity implements UserListener {
 
     @Override
     public void onUserClicked(User user) {
-        Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+        Intent intent = new Intent(getContext(), ChatActivity.class);
         intent.putExtra(Constants.KEY_USER, user);
         startActivity(intent);
     }

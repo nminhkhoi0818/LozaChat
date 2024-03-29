@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.lozachat.activities.ChatActivity;
+import com.example.lozachat.activities.MainActivity;
+import com.example.lozachat.activities.SearchActivity;
 import com.example.lozachat.adapters.ContactUsersAdapter;
 import com.example.lozachat.adapters.FriendRequestsAdapter;
 import com.example.lozachat.adapters.RecentConversationsAdapter;
@@ -47,6 +49,7 @@ public class ContactsFragment extends Fragment implements UserListener {
         init();
         getUsers();
         listenFriendRequests();
+        setListeners();
         return view;
     }
     private void init() {
@@ -55,6 +58,14 @@ public class ContactsFragment extends Fragment implements UserListener {
         binding.friendRequestsRecyclerView.setAdapter(friendRequestsAdapter);
         database = FirebaseFirestore.getInstance();
     }
+
+    private void setListeners() {
+        binding.searchButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), SearchActivity.class);
+            startActivity(intent);
+        });
+    }
+
     private void getUsers() {
         loading(true);
         database.collection(Constants.KEY_COLLECTION_USERS)

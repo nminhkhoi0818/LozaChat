@@ -15,4 +15,6 @@
     <string name="online">Online</string>
     <string name="contacts">Contacts</string>
     <string name="home">Home</string>
+    <string name="deny">Deny</string>
+    <string name="accept">Accept</string>
 </resources>

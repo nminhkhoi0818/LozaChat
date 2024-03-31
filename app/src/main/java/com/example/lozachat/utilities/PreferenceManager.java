@@ -3,6 +3,10 @@ package com.example.lozachat.utilities;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 public class PreferenceManager {
     private final SharedPreferences sharedPreferences;
 
@@ -25,11 +29,20 @@ public class PreferenceManager {
         editor.putString(key, value);
         editor.apply();
     }
-
     public String getString(String key) {
         return sharedPreferences.getString(key, null);
     }
-
+    public void putArrayList(String key, ArrayList<String> arrayList) {
+        Set<String> set = new HashSet<String>(arrayList);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putStringSet(key, set);
+        editor.apply();
+    }
+    public ArrayList<String> getArrayList(String key) {
+        Set<String> set = sharedPreferences.getStringSet(key, null);
+        if (set == null) return null;
+        return new ArrayList<>(set);
+    }
     public void clear() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();

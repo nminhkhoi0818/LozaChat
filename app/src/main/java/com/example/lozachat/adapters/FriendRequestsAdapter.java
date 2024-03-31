@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lozachat.databinding.ItemContainerContactUserBinding;
 import com.example.lozachat.databinding.ItemContainerFriendRequestBinding;
+import com.example.lozachat.listeners.FriendRequestListener;
 import com.example.lozachat.listeners.UserListener;
 import com.example.lozachat.models.FriendRequest;
 import com.example.lozachat.models.User;
@@ -21,9 +22,10 @@ import java.util.List;
 
 public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAdapter.FriendRequestViewHolder> {
     private final List<FriendRequest> requests;
-    private UserListener userListener = null;
-    public FriendRequestsAdapter(List<FriendRequest> requests) {
+    private FriendRequestListener friendRequestListener = null;
+    public FriendRequestsAdapter(List<FriendRequest> requests, FriendRequestListener friendRequestListener) {
         this.requests = requests;
+        this.friendRequestListener = friendRequestListener;
     }
     @NonNull
     @Override
@@ -57,7 +59,17 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAd
             binding.textEmail.setText(request.senderEmail);
             binding.imageProfile.setImageBitmap(getUserImage(request.senderImage));
 
-//            binding.getRoot().setOnClickListener(v -> userListener.onUserClicked(user));
+            binding.denyBtn.setOnClickListener(v -> {
+                friendRequestListener.OnDeny(request);
+                requests.remove(position);
+                notifyItemRemoved(position);
+            });
+            binding.acceptBtn.setOnClickListener(v -> {
+                friendRequestListener.OnAccept(request);
+                requests.remove(position);
+                notifyItemRemoved(position);
+            });
+
         }
     }
     private Bitmap getUserImage(String encodedImage) {

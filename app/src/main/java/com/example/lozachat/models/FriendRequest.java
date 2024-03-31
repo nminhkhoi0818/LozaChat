@@ -1,5 +1,5 @@
 package com.example.lozachat.models;
 
 public class FriendRequest {
-    public String senderId, senderEmail, senderName, senderImage, receiverId;
+    public String id, senderId, senderEmail, senderName, senderImage, receiverId;
 }

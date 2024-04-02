@@ -73,6 +73,10 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
     }
 
     private void getUsers() {
+        if (preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST).isEmpty()) {
+            loading(false);
+            return;
+        }
         loading(true);
         database.collection(Constants.KEY_COLLECTION_USERS)
                 .whereIn(FieldPath.documentId(), preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST))

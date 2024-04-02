@@ -33,14 +33,17 @@ public class PreferenceManager {
         return sharedPreferences.getString(key, null);
     }
     public void putArrayList(String key, ArrayList<String> arrayList) {
-        Set<String> set = new HashSet<String>(arrayList);
+        Set<String> set = new HashSet<String>();
+        if (arrayList != null) {
+            set.addAll(arrayList);
+        }
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putStringSet(key, set);
         editor.apply();
     }
     public ArrayList<String> getArrayList(String key) {
         Set<String> set = sharedPreferences.getStringSet(key, null);
-        if (set == null) return null;
+        if (set == null) return new ArrayList<>();
         return new ArrayList<>(set);
     }
     public void clear() {

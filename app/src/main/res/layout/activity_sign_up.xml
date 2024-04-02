@@ -8,7 +8,8 @@
     android:overScrollMode="never"
     android:padding="@dimen/_24sdp"
     android:scrollbars="none"
-    tools:context=".activities.SignUpActivity">
+    tools:context=".activities.SignUpActivity"
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -58,7 +59,8 @@
                 android:importantForAutofill="no"
                 android:inputType="text"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13sdp" />
+                android:textSize="@dimen/_13sdp"
+                android:backgroundTint="@color/primary"/>
         </LinearLayout>
 
         <LinearLayout
@@ -79,7 +81,8 @@
                 android:importantForAutofill="no"
                 android:inputType="textEmailAddress"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13sdp"/>
+                android:textSize="@dimen/_13sdp"
+                android:backgroundTint="@color/primary"/>
         </LinearLayout>
 
         <LinearLayout
@@ -100,7 +103,8 @@
                 android:importantForAutofill="no"
                 android:inputType="textPassword"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13sdp"/>
+                android:textSize="@dimen/_13sdp"
+                android:backgroundTint="@color/primary"/>
         </LinearLayout>
 
         <LinearLayout
@@ -121,7 +125,8 @@
                 android:importantForAutofill="no"
                 android:inputType="textPassword"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13sdp"/>
+                android:textSize="@dimen/_13sdp"
+                android:backgroundTint="@color/primary"/>
         </LinearLayout>
 
         <FrameLayout

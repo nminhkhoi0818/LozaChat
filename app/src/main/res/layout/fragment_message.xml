@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main_toolbar"
         android:layout_width="match_parent"
@@ -52,7 +53,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_below="@id/main_toolbar"
-        android:background="@drawable/background_content_bottom"
         app:layout_constraintTop_toBottomOf="@id/main_toolbar"
         app:layout_constraintBottom_toBottomOf="parent">
 

@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.lozachat.activities.AddGroupActivity;
 import com.example.lozachat.activities.ChatActivity;
 import com.example.lozachat.adapters.RecentConversationsAdapter;
 import com.example.lozachat.databinding.FragmentMessageBinding;
@@ -42,6 +43,7 @@ public class MessageFragment extends Fragment implements ConversationListener {
         preferenceManager = new PreferenceManager(getContext());
         init();
         listenConversations();
+        setListeners();
         return view;
     }
 
@@ -59,6 +61,13 @@ public class MessageFragment extends Fragment implements ConversationListener {
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
+    }
+
+    private void setListeners() {
+        binding.addGroupButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), AddGroupActivity.class);
+            startActivity(intent);
+        });
     }
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if (error != null) {

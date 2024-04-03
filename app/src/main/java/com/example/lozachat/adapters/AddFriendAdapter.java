@@ -12,12 +12,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lozachat.databinding.ItemContainerAddFriendBinding;
 import com.example.lozachat.listeners.UserListener;
 import com.example.lozachat.models.User;
+import com.example.lozachat.utilities.PreferenceManager;
 
 import java.util.List;
 
 public class AddFriendAdapter extends RecyclerView.Adapter<AddFriendAdapter.AddFriendViewHolder> {
     private final List<User> users;
     private UserListener userListener = null;
+    private PreferenceManager preferenceManager;
     public AddFriendAdapter (List<User> users, UserListener userListener) {
         this.users = users;
         this.userListener = userListener;
@@ -50,9 +52,14 @@ public class AddFriendAdapter extends RecyclerView.Adapter<AddFriendAdapter.AddF
             binding.textName.setText(user.name);
             binding.textEmail.setText(user.email);
             binding.imageProfile.setImageBitmap(getUserImage(user.image));
-            binding.addFriendBtn.setOnClickListener(v -> {
-                userListener.onUserClicked(user);
-            });
+            if (user.is_friend) {
+                binding.addFriendBtn.setEnabled(false);
+            } else {
+                binding.addFriendBtn.setEnabled(true);
+                binding.addFriendBtn.setOnClickListener(v -> {
+                    userListener.onUserClicked(user);
+                });
+            }
         }
     }
 

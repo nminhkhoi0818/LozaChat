@@ -1,10 +1,12 @@
 package com.example.lozachat.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,7 +34,8 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
     ActivitySearchUserBinding binding;
     private PreferenceManager preferenceManager;
     private FirebaseFirestore database;
-
+    private AddFriendAdapter addFriendAdapter;
+    private List<User> users;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,10 +44,14 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
         preferenceManager = new PreferenceManager(getApplicationContext());
         init();
         setListeners();
+        binding.searchText.requestFocus();
     }
 
     private void init() {
         database = FirebaseFirestore.getInstance();
+        users = new ArrayList<>();
+        addFriendAdapter = new AddFriendAdapter(users, SearchActivity.this);
+        binding.searchRecyclerView.setAdapter(addFriendAdapter);
     }
 
     private void setListeners() {
@@ -65,7 +72,7 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
                                 loading(false);
                                 String currentUserId = preferenceManager.getString(Constants.KEY_USER_ID);
                                 if (task.isSuccessful()) {
-                                    List<User> users = new ArrayList<>();
+                                    users.clear();
                                     for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                                         if (currentUserId.equals(queryDocumentSnapshot.getId())) {
                                             continue;
@@ -75,16 +82,16 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
                                         user.email = queryDocumentSnapshot.getString(Constants.KEY_EMAIL);
                                         user.image = queryDocumentSnapshot.getString(Constants.KEY_IMAGE);
                                         user.id = queryDocumentSnapshot.getId();
+                                        ArrayList<String> currentFriends = preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST);
+                                        user.is_friend = currentFriends.contains(user.id);
                                         // Handle logout using token tutorial 5
                                         // user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
                                         users.add(user);
                                     }
-                                    if (users.size() > 0) {
-                                        AddFriendAdapter addFriendAdapter = new AddFriendAdapter(users, SearchActivity.this);
-                                        binding.searchRecyclerView.setAdapter(addFriendAdapter);
-                                        binding.searchRecyclerView.setVisibility(View.VISIBLE);
-                                    }
-                                } else {}
+                                    addFriendAdapter.notifyDataSetChanged();
+                                    binding.searchRecyclerView.setVisibility(View.VISIBLE);
+                                    binding.searchRecyclerView.smoothScrollToPosition(0);
+                                } else { }
                             }
                         });
             }

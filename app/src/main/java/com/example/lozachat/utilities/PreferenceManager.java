@@ -42,8 +42,7 @@ public class PreferenceManager {
         editor.apply();
     }
     public ArrayList<String> getArrayList(String key) {
-        Set<String> set = sharedPreferences.getStringSet(key, null);
-        if (set == null) return new ArrayList<>();
+        Set<String> set = sharedPreferences.getStringSet(key, new HashSet<String>());
         return new ArrayList<>(set);
     }
     public void clear() {

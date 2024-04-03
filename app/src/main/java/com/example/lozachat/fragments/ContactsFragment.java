@@ -177,7 +177,10 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
         senderReference.update(Constants.KEY_FRIENDS_LIST, FieldValue.arrayUnion(friendRequest.receiverId));
         receiverReference.update(Constants.KEY_FRIENDS_LIST, FieldValue.arrayUnion(friendRequest.senderId));
         database.collection(Constants.KEY_COLLECTION_FRIEND_REQUESTS).document(friendRequest.id).delete();
-
+        ArrayList<String> friends = preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST);
+        friends.add(friendRequest.senderId);
+        preferenceManager.putArrayList(Constants.KEY_FRIENDS_LIST, friends);
+        getUsers();
     }
 
     @Override

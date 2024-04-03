@@ -32,17 +32,21 @@
             app:layout_constraintStart_toEndOf="@id/backBtn"
             app:layout_constraintEnd_toEndOf="parent"
             android:hint="Search"
+            android:textColor="@color/dark"
             android:background="@drawable/edit_text_rounded_corner"
             android:padding="@dimen/_8sdp"
             android:drawableLeft="@drawable/ic_search"
             android:drawablePadding="@dimen/_10sdp"
+            android:focusableInTouchMode="true"
+            android:focusable="true"
+            android:focusedByDefault="true"
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@drawable/background_content_bottom"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_toolbar">
 

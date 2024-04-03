@@ -41,6 +41,10 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".activities.GroupChatActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".fragments.MessageFragment"
             android:exported="false" />
         <activity android:name=".activities.SearchActivity"

@@ -26,4 +26,10 @@ public class Constants {
     public static final String KEY_SENDER_EMAIL = "senderEmail";
     public static final String KEY_FRIENDS_LIST = "friendsList";
     public static final String KEY_FCM_TOKEN = "fcmToken";
+    public static final String KEY_COLLECTION_GROUP = "group";
+    public static final String KEY_GROUPS_LIST = "groupsList";
+    public static final String KEY_MEMBERS = "members";
+    public static final String KEY_LAST_SENDER_ID = "lastSenderId";
+    public static final String KEY_LAST_SENDER_NAME = "lastSenderName";
+    public static final String KEY_GROUP = "group";
 }

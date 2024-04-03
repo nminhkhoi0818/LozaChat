@@ -58,6 +58,7 @@ public class AddFriendAdapter extends RecyclerView.Adapter<AddFriendAdapter.AddF
                 binding.addFriendBtn.setEnabled(true);
                 binding.addFriendBtn.setOnClickListener(v -> {
                     userListener.onUserClicked(user);
+                    binding.addFriendBtn.setEnabled(false);
                 });
             }
         }

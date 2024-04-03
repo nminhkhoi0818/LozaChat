@@ -10,6 +10,7 @@ import com.example.lozachat.R;
 import com.example.lozachat.databinding.ActivityMainBinding;
 import com.example.lozachat.fragments.ContactsFragment;
 import com.example.lozachat.fragments.MessageFragment;
+import com.example.lozachat.fragments.SettingsFragment;
 import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends AppCompatActivity {
@@ -17,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
 //    private PreferenceManager preferenceManager;
     private MessageFragment messageFragment = new MessageFragment();
     private ContactsFragment contactsFragment = new ContactsFragment();
+    private SettingsFragment settingsFragment = new SettingsFragment();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_frame_layout, messageFragment).commit();
                 } else if (item.getItemId()==R.id.menu_contacts) {
                     getSupportFragmentManager().beginTransaction().replace(R.id.main_frame_layout, contactsFragment).commit();
+                } else if (item.getItemId()==R.id.menu_settings) {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.main_frame_layout, settingsFragment).commit();
                 }
                 return true;
             }

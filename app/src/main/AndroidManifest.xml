@@ -45,6 +45,8 @@
             android:exported="false" />
         <activity android:name=".activities.SearchActivity"
             android:exported="true" />
+        <activity android:name=".activities.AddGroupActivity"
+            android:exported="true" />
 
 
         <service

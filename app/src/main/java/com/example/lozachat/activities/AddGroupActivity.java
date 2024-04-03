@@ -7,6 +7,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.lozachat.adapters.AddGroupAdapter;
 import com.example.lozachat.databinding.ActivityAddGroupBinding;
 import com.example.lozachat.databinding.ActivitySearchUserBinding;
 import com.example.lozachat.models.User;
@@ -46,6 +47,10 @@ public class AddGroupActivity extends AppCompatActivity {
 
     private void getUsers() {
         loading(true);
+        if (preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST).isEmpty()) {
+            loading(false);
+            return;
+        }
         database.collection(Constants.KEY_COLLECTION_USERS)
                 .whereIn(FieldPath.documentId(), preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST))
                 .get()
@@ -68,11 +73,13 @@ public class AddGroupActivity extends AppCompatActivity {
                             // user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
                             users.add(user);
                         }
-//                        if (users.size() > 0) {
-//                            ContactUsersAdapter contactUsersAdapter = new ContactUsersAdapter(users, this);
-//                            binding.usersRecyclerView.setAdapter(contactUsersAdapter);
-//                            binding.usersRecyclerView.setVisibility(View.VISIBLE);
-//                        } else {
+                        Log.d("zzz", users.toString());
+                        if (users.size() > 0) {
+                            AddGroupAdapter contactUsersAdapter = new AddGroupAdapter(users);
+                            binding.usersRecyclerView.setAdapter(contactUsersAdapter);
+                            binding.usersRecyclerView.setVisibility(View.VISIBLE);
+                        }
+//                        else {
 //                            showErrorMessage();
 //                        }
                     }

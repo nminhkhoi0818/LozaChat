@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import com.example.lozachat.adapters.ChatAdapter;
 import com.example.lozachat.adapters.GroupChatAdapter;
 import com.example.lozachat.databinding.ActivityChatBinding;
+import com.example.lozachat.listeners.ChatListener;
 import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.Group;
 import com.example.lozachat.models.User;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class GroupChatActivity extends BaseActivity {
+public class GroupChatActivity extends BaseActivity implements ChatListener {
     private ActivityChatBinding binding;
     private Group group;
     private List<ChatMessage> chatMessages;
@@ -71,17 +72,19 @@ public class GroupChatActivity extends BaseActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
-                        HashMap<String, String> membersImages = new HashMap<>();
-                        Log.d("zzz", "ASD");
-
+                        HashMap<String, String> membersImages = new HashMap<>(), membersName = new HashMap<>();
                         for (QueryDocumentSnapshot document : task.getResult()) {;
                             membersImages.put(document.getId(), document.getString(Constants.KEY_IMAGE));
+                            membersName.put(document.getId(), document.getString(Constants.KEY_NAME));
                         }
                         group.membersImage = membersImages;
+                        group.membersName = membersName;
                         groupChatAdapter = new GroupChatAdapter(
                                 chatMessages,
                                 group.membersImage,
-                                preferenceManager.getString(Constants.KEY_USER_ID)
+                                group.membersName,
+                                preferenceManager.getString(Constants.KEY_USER_ID),
+                                this
                         );
                         binding.chatRecycleView.setAdapter(groupChatAdapter);
                         listenMessages();
@@ -143,12 +146,22 @@ public class GroupChatActivity extends BaseActivity {
             for (DocumentChange documentChange: value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.chatId = documentChange.getDocument().getId();
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     chatMessages.add(chatMessage);
+                } else if (documentChange.getType() == DocumentChange.Type.REMOVED) {
+                    for (int i = 0; i < chatMessages.size(); ++i) {
+                        if (chatMessages.get(i).chatId.equals(documentChange.getDocument().getId())) {
+                            chatMessages.remove(i);
+                            groupChatAdapter.notifyItemRemoved(i);
+                            return;
+                        }
+                    }
+                    return;
                 }
             }
             chatMessages.sort(Comparator.comparing(obj -> obj.dateObject));
@@ -173,5 +186,29 @@ public class GroupChatActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
 //        listenAvailabilityOfReceiver();
+    }
+
+    @Override
+    public void OnChatDelete(ChatMessage chatMessage) {
+        DocumentReference documentReference =
+                database.collection(Constants.KEY_COLLECTION_CHAT).document(chatMessage.chatId);
+        documentReference.delete();
+        DocumentReference groupReference =
+                database.collection(Constants.KEY_COLLECTION_GROUP).document(group.id);
+        if (groupChatAdapter.getItemCount() > 0) {
+            ChatMessage prevChatMessage = groupChatAdapter.getItem(groupChatAdapter.getItemCount() - 1);
+            groupReference.update(
+                    Constants.KEY_LAST_MESSAGE, prevChatMessage.message,
+                    Constants.KEY_LAST_SENDER_ID, prevChatMessage.senderId,
+                    Constants.KEY_LAST_SENDER_NAME, groupChatAdapter.getMemberName(groupChatAdapter.getItemCount() - 1),
+                    Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
+            );
+        } else {
+            groupReference.update(
+                    Constants.KEY_LAST_MESSAGE, "",
+                    Constants.KEY_LAST_SENDER_ID, "",
+                    Constants.KEY_LAST_SENDER_NAME, ""
+            );
+        }
     }
 }

@@ -9,5 +9,5 @@ public class Group implements Serializable {
     public String id, name, image, lastMessage, lastSenderId, lastSenderName, dateTime;
     public ArrayList<String> members;
     public Date dateObject;
-    public HashMap<String, String> membersImage;
+    public HashMap<String, String> membersImage, membersName;
 }

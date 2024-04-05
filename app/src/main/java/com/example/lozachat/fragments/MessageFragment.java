@@ -118,6 +118,16 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                             break;
                         }
                     }
+                } else if (documentChange.getType() == DocumentChange.Type.REMOVED) {
+                    for (int i = 0; i < conversations.size(); ++i) {
+                        String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+                        String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+                        if (conversations.get(i).senderId.equals(senderId) && conversations.get(i).receiverId.equals(receiverId)) {
+                            conversations.remove(i);
+                            conversationsAdapter.notifyItemRemoved(i);
+                            break;
+                        }
+                    }
                 }
             }
             conversations.sort(Collections.reverseOrder(Comparator.comparing(obj -> obj.dateObject)));

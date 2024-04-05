@@ -5,12 +5,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lozachat.adapters.ChatAdapter;
 import com.example.lozachat.databinding.ActivityChatBinding;
+import com.example.lozachat.listeners.ChatListener;
 import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.User;
 import com.example.lozachat.utilities.Constants;
@@ -32,7 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class ChatActivity extends BaseActivity {
+public class ChatActivity extends BaseActivity implements ChatListener {
     private ActivityChatBinding binding;
     private User receiverUser;
     private List<ChatMessage> chatMessages;
@@ -57,7 +59,8 @@ public class ChatActivity extends BaseActivity {
         chatAdapter = new ChatAdapter(
                 chatMessages,
                 getBitmapFromEncodedString(receiverUser.image),
-                preferenceManager.getString(Constants.KEY_USER_ID)
+                preferenceManager.getString(Constants.KEY_USER_ID),
+                this
         );
         binding.chatRecycleView.setAdapter(chatAdapter);
         database = FirebaseFirestore.getInstance();
@@ -128,12 +131,22 @@ public class ChatActivity extends BaseActivity {
             for (DocumentChange documentChange: value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.chatId = documentChange.getDocument().getId();
                     chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     chatMessages.add(chatMessage);
+                } else if (documentChange.getType() == DocumentChange.Type.REMOVED) {
+                    for (int i = 0; i < chatMessages.size(); ++i) {
+                        if (chatMessages.get(i).chatId.equals(documentChange.getDocument().getId())) {
+                            chatMessages.remove(i);
+                            chatAdapter.notifyItemRemoved(i);
+                            return;
+                        }
+                    }
+                    return;
                 }
             }
             chatMessages.sort(Comparator.comparing(obj -> obj.dateObject));
@@ -211,5 +224,25 @@ public class ChatActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         listenAvailabilityOfReceiver();
+    }
+
+    @Override
+    public void OnChatDelete(ChatMessage chatMessage) {
+        DocumentReference chatReference =
+                database.collection(Constants.KEY_COLLECTION_CHAT).document(chatMessage.chatId);
+        chatReference.delete();
+        if (conversationId != null) {
+            DocumentReference conversationReference =
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
+            if (chatAdapter.getItemCount() > 0) {
+                ChatMessage prevChatMessage = chatAdapter.getItem(chatAdapter.getItemCount() - 1);
+                conversationReference.update(
+                        Constants.KEY_LAST_MESSAGE, prevChatMessage.message,
+                        Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
+                );
+            } else {
+                conversationReference.delete();
+            }
+        }
     }
 }

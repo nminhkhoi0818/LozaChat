@@ -59,7 +59,8 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.GroupViewH
         }
         void setUserData(Group group) {
             binding.groupName.setText(group.name);
-            binding.textRecentMessage.setText(group.lastMessage);
+            if (!group.lastSenderName.isEmpty() && !group.lastSenderId.isEmpty())
+                binding.textRecentMessage.setText(String.format("%s: %s", group.lastSenderName, group.lastMessage));
             binding.imageProfile.setImageBitmap(getUserImage(group.image));
             binding.getRoot().setOnClickListener(v -> groupListener.onGroupClicked(group));
         }

@@ -164,7 +164,9 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
     @Override
     public void onUserClicked(User user) {
         Intent intent = new Intent(getContext(), ChatActivity.class);
-        intent.putExtra(Constants.KEY_USER, user);
+        User new_user = new User(user);
+        new_user.image = "";
+        intent.putExtra(Constants.KEY_USER, new_user);
         startActivity(intent);
     }
 

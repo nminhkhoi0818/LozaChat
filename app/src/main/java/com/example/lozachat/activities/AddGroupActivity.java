@@ -91,6 +91,7 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
         });
 
         binding.addGroupButton.setOnClickListener(v -> {
+            binding.addGroupButton.setEnabled(false);
             ArrayList<String> members = new ArrayList<>();
             members.add(preferenceManager.getString(Constants.KEY_USER_ID));
             for (int i = 0; i < selectedUsers.size(); i++) {
@@ -106,8 +107,11 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
             group.put(Constants.KEY_LAST_SENDER_NAME, "");
             group.put(Constants.KEY_TIMESTAMP, new Date());
 
-            database.collection(Constants.KEY_COLLECTION_GROUP).add(group)
-                    .addOnCompleteListener(e -> finish());
+            database.collection(Constants.KEY_COLLECTION_GROUP).add(group).addOnCompleteListener(
+                    task -> {
+                        finish();
+                    }
+            );
         });
     }
 

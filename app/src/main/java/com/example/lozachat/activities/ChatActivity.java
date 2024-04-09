@@ -4,15 +4,21 @@ import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.lozachat.adapters.ChatAdapter;
+import com.example.lozachat.adapters.ContactUsersAdapter;
 import com.example.lozachat.databinding.ActivityChatBinding;
 import com.example.lozachat.listeners.ChatListener;
 import com.example.lozachat.models.ChatMessage;
@@ -26,13 +32,18 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,18 +66,68 @@ public class ChatActivity extends BaseActivity implements ChatListener {
     private FirebaseFirestore database;
     private String conversationId = null;
     private Boolean isReceiverAvailable = false;
+    ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                // Callback is invoked after the user selects a media item or closes the
+                // photo picker.
+                if (uri != null) {
+//                    Glide.with(getApplicationContext()).load(uri).into(binding.imageProfile);
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        String bitmapString = bitMapToString(bitmap);
+                        HashMap<String, Object> message = new HashMap<>();
+                        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                        message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+                        message.put(Constants.KEY_MESSAGE, bitmapString);
+                        message.put(Constants.KEY_TIMESTAMP, new Date());
+                        message.put(Constants.KEY_TYPE, "image");
+                        database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
+                        if (conversationId != null) {
+                            updateConversation("Sent an image");
+                        } else {
+                            HashMap<String, Object> conversation = new HashMap<>();
+                            conversation.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                            conversation.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
+                            conversation.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
+                            conversation.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+                            conversation.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
+                            conversation.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
+                            conversation.put(Constants.KEY_LAST_MESSAGE, "Sent an image");
+                            conversation.put(Constants.KEY_TIMESTAMP, new Date());
+                            addConversation(conversation);
+                        }
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         loadReceiverDetails();
-        setListeners();
-        init();
-        listenMessages();
+        database = FirebaseFirestore.getInstance();
+        preferenceManager = new PreferenceManager(getApplicationContext());
+        getUserImage();
+    }
+    private void getUserImage() {
+        DocumentReference docRef = database.collection(Constants.KEY_COLLECTION_USERS).document(receiverUser.id);
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                receiverUser.image = document.getString(Constants.KEY_IMAGE);
+                init();
+                listenMessages();
+                setListeners();
+            }
+        });
     }
     private void init() {
-        preferenceManager = new PreferenceManager(getApplicationContext());
         chatMessages = new ArrayList<>();
         chatAdapter = new ChatAdapter(
                 chatMessages,
@@ -75,15 +136,19 @@ public class ChatActivity extends BaseActivity implements ChatListener {
                 this
         );
         binding.chatRecycleView.setAdapter(chatAdapter);
-        database = FirebaseFirestore.getInstance();
     }
 
     private void sendMessage() {
+        String messageToSend = binding.inputMessage.getText().toString().trim();
+        if (messageToSend.isEmpty()) {
+            return;
+        }
         HashMap<String, Object> message = new HashMap<>();
         message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
-        message.put(Constants.KEY_MESSAGE, binding.inputMessage.getText().toString());
+        message.put(Constants.KEY_MESSAGE, messageToSend);
         message.put(Constants.KEY_TIMESTAMP, new Date());
+        message.put(Constants.KEY_TYPE, "text");
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
         if (conversationId != null) {
             updateConversation(binding.inputMessage.getText().toString());
@@ -95,7 +160,7 @@ public class ChatActivity extends BaseActivity implements ChatListener {
             conversation.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
             conversation.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
             conversation.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
-            conversation.put(Constants.KEY_LAST_MESSAGE, binding.inputMessage.getText().toString());
+            conversation.put(Constants.KEY_LAST_MESSAGE, messageToSend);
             conversation.put(Constants.KEY_TIMESTAMP, new Date());
             addConversation(conversation);
         }
@@ -108,7 +173,7 @@ public class ChatActivity extends BaseActivity implements ChatListener {
                 data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
                 data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
                 data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
-                data.put(Constants.KEY_MESSAGE, binding.inputMessage.getText().toString());
+                data.put(Constants.KEY_MESSAGE, messageToSend);
 
                 JSONObject body = new JSONObject();
                 body.put(Constants.REMOTE_MSG_DATA, data);
@@ -209,6 +274,7 @@ public class ChatActivity extends BaseActivity implements ChatListener {
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
                     chatMessage.dateTime = getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                    chatMessage.type = documentChange.getDocument().getString(Constants.KEY_TYPE);
                     chatMessages.add(chatMessage);
                 } else if (documentChange.getType() == DocumentChange.Type.REMOVED) {
                     for (int i = 0; i < chatMessages.size(); ++i) {
@@ -251,8 +317,13 @@ public class ChatActivity extends BaseActivity implements ChatListener {
     private void setListeners() {
         binding.imageBack.setOnClickListener(v -> finish());
         binding.layoutSend.setOnClickListener(v -> sendMessage());
+        binding.layoutImage.setOnClickListener(v -> sendImage());
     }
-
+    private void sendImage() {
+        pickMedia.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
+    }
     private String getReadableDateTime(Date date) {
         return new SimpleDateFormat("MMMM dd, yyyy - hh:mm a", Locale.getDefault()).format(date);
     }
@@ -295,7 +366,13 @@ public class ChatActivity extends BaseActivity implements ChatListener {
             conversationId = documentSnapshot.getId();
         }
     };
-
+    public String bitMapToString(Bitmap bitmap){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100, baos);
+        byte [] b = baos.toByteArray();
+        String temp = Base64.encodeToString(b, Base64.DEFAULT);
+        return temp;
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -312,10 +389,18 @@ public class ChatActivity extends BaseActivity implements ChatListener {
                 database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
             if (chatAdapter.getItemCount() > 0) {
                 ChatMessage prevChatMessage = chatAdapter.getItem(chatAdapter.getItemCount() - 1);
-                conversationReference.update(
-                        Constants.KEY_LAST_MESSAGE, prevChatMessage.message,
-                        Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
-                );
+                if (!prevChatMessage.type.equals("image")) {
+                    conversationReference.update(
+                            Constants.KEY_LAST_MESSAGE, prevChatMessage.message,
+                            Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
+                    );
+                }
+                else {
+                    conversationReference.update(
+                            Constants.KEY_LAST_MESSAGE, "Sent an image",
+                            Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
+                    );
+                }
             } else {
                 conversationReference.delete();
             }

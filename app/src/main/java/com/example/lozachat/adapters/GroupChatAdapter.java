@@ -11,7 +11,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lozachat.databinding.ItemContainerReceivedImageBinding;
 import com.example.lozachat.databinding.ItemContainerReceivedMessageBinding;
+import com.example.lozachat.databinding.ItemContainerSentImageBinding;
 import com.example.lozachat.databinding.ItemContainerSentMessageBinding;
 import com.example.lozachat.listeners.ChatListener;
 import com.example.lozachat.models.ChatMessage;
@@ -23,8 +25,10 @@ public class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private final List<ChatMessage> chatMessages;
     private final HashMap<String, String> membersImage, membersName;
     private final String senderId;
-    public static final int VIEW_TYPE_SENT = 1;
-    public static final int VIEW_TYPE_RECEIVED = 2;
+    public static final int VIEW_TYPE_SENT_TEXT = 1;
+    public static final int VIEW_TYPE_RECEIVED_TEXT = 2;
+    public static final int VIEW_TYPE_SENT_IMAGE = 3;
+    public static final int VIEW_TYPE_RECEIVED_IMAGE = 4;
     private ChatListener chatListener;
 
     public GroupChatAdapter(List<ChatMessage> chatMessages, HashMap<String, String> membersImage, HashMap<String, String> membersName, String senderId, ChatListener chatListener) {
@@ -38,9 +42,25 @@ public class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_SENT) {
+        if (viewType == VIEW_TYPE_SENT_TEXT) {
             return new GroupChatAdapter.SentMessageViewHolder(
                     ItemContainerSentMessageBinding.inflate(
+                            LayoutInflater.from(parent.getContext()),
+                            parent,
+                            false
+                    )
+            );
+        } else if (viewType == VIEW_TYPE_SENT_IMAGE) {
+            return new GroupChatAdapter.SentImageViewHolder(
+                    ItemContainerSentImageBinding.inflate(
+                            LayoutInflater.from(parent.getContext()),
+                            parent,
+                            false
+                    )
+            );
+        } else if (viewType == VIEW_TYPE_RECEIVED_IMAGE) {
+            return new GroupChatAdapter.ReceivedImageViewHolder(
+                    ItemContainerReceivedImageBinding.inflate(
                             LayoutInflater.from(parent.getContext()),
                             parent,
                             false
@@ -59,8 +79,14 @@ public class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (getItemViewType(position) == VIEW_TYPE_SENT) {
+        if (getItemViewType(position) == VIEW_TYPE_SENT_TEXT) {
             ((GroupChatAdapter.SentMessageViewHolder) holder).setData(chatMessages.get(position));
+        } else if (getItemViewType(position) == VIEW_TYPE_SENT_IMAGE) {
+            ((GroupChatAdapter.SentImageViewHolder) holder).setData(chatMessages.get(position));
+        } else if (getItemViewType(position) == VIEW_TYPE_RECEIVED_IMAGE) {
+            ((GroupChatAdapter.ReceivedImageViewHolder) holder).setData(chatMessages.get(position),
+                    membersName.get(chatMessages.get(position).senderId),
+                    getUserImage(membersImage.get(chatMessages.get(position).senderId)));
         } else {
             ((GroupChatAdapter.ReceivedMessageViewHolder) holder).setData(
                     chatMessages.get(position),
@@ -86,9 +112,13 @@ public class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public int getItemViewType(int position) {
         if (chatMessages.get(position).senderId.equals(senderId)) {
-            return VIEW_TYPE_SENT;
+            if (chatMessages.get(position).type.equals("image"))
+                return VIEW_TYPE_SENT_IMAGE;
+            return VIEW_TYPE_SENT_TEXT;
         } else {
-            return VIEW_TYPE_RECEIVED;
+            if (chatMessages.get(position).type.equals("image"))
+                return VIEW_TYPE_RECEIVED_IMAGE;
+            return VIEW_TYPE_RECEIVED_TEXT;
         }
     }
 
@@ -138,6 +168,61 @@ public class GroupChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             binding.textName.setText(receivedName);
             binding.textName.setVisibility(View.VISIBLE);
             binding.imageProfile.setImageBitmap(receivedProfileImage);
+        }
+    }
+    class SentImageViewHolder extends RecyclerView.ViewHolder {
+        private final ItemContainerSentImageBinding binding;
+
+        SentImageViewHolder(ItemContainerSentImageBinding itemContainerSentImageBinding) {
+            super(itemContainerSentImageBinding.getRoot());
+            binding = itemContainerSentImageBinding;
+        }
+
+        void setData(ChatMessage chatMessage) {
+            binding.imageMessage.setImageBitmap(decodeImage(chatMessage.message));
+            binding.textDateTime.setText(chatMessage.dateTime);
+            binding.imageMessage.setOnLongClickListener(v -> {
+                new AlertDialog.Builder(itemView.getContext(), androidx.appcompat.R.style.Base_Theme_AppCompat_Light_Dialog_Alert)
+                        .setTitle("Delete message")
+                        .setMessage("Are you sure?")
+                        .setPositiveButton("Confirm", (dialog, which) -> {
+                            for (int i = 0; i < getItemCount(); ++i) {
+                                if (chatMessages.get(i).chatId.equals(chatMessage.chatId)) {
+                                    chatMessages.remove(i);
+                                    chatListener.OnChatDelete(chatMessage);
+                                    notifyItemRemoved(i);
+                                    break;
+                                }
+                            }
+                        }).setNegativeButton("Cancel", (dialog, which) -> {
+                            // do nothing
+                        }).setIcon(android.R.drawable.ic_dialog_alert).show();
+                return false;
+            });
+        }
+        private Bitmap decodeImage(String encodedImage) {
+            byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        }
+    }
+    static class ReceivedImageViewHolder extends RecyclerView.ViewHolder {
+        private final ItemContainerReceivedImageBinding binding;
+
+        ReceivedImageViewHolder(ItemContainerReceivedImageBinding itemContainerReceivedImageBinding) {
+            super(itemContainerReceivedImageBinding.getRoot());
+            binding = itemContainerReceivedImageBinding;
+        }
+
+        void setData(ChatMessage chatMessage, String receivedName, Bitmap receivedProfileImage) {
+            binding.imageMessage.setImageBitmap(decodeImage(chatMessage.message));
+            binding.textDateTime.setText(chatMessage.dateTime);
+            binding.textName.setText(receivedName);
+            binding.textName.setVisibility(View.VISIBLE);
+            binding.imageProfile.setImageBitmap(receivedProfileImage);
+        }
+        private Bitmap decodeImage(String encodedImage) {
+            byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         }
     }
     private Bitmap getUserImage(String encodedImage) {

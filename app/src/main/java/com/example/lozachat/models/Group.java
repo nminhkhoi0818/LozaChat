@@ -10,4 +10,18 @@ public class Group implements Serializable {
     public ArrayList<String> members;
     public Date dateObject;
     public HashMap<String, String> membersImage, membersName;
+    public Group() {}
+    public Group(Group group) {
+        this.id = group.id;
+        this.name = group.name;
+        this.image = group.image;
+        this.lastMessage = group.lastMessage;
+        this.lastSenderId = group.lastSenderId;
+        this.lastSenderName = group.lastSenderName;
+        this.dateTime = group.dateTime;
+        this.members = group.members;
+        this.dateObject = group.dateObject;
+        this.membersImage = group.membersImage;
+        this.membersName = group.membersName;
+    }
 }

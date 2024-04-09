@@ -3,6 +3,7 @@ package com.example.lozachat.adapters;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -59,8 +60,11 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.GroupViewH
         }
         void setUserData(Group group) {
             binding.groupName.setText(group.name);
-            if (!group.lastSenderName.isEmpty() && !group.lastSenderId.isEmpty())
+            if (!group.lastSenderName.isEmpty() && !group.lastSenderId.isEmpty()) {
                 binding.textRecentMessage.setText(String.format("%s: %s", group.lastSenderName, group.lastMessage));
+            } else {
+                binding.textRecentMessage.setText("");
+            }
             binding.imageProfile.setImageBitmap(getUserImage(group.image));
             binding.getRoot().setOnClickListener(v -> groupListener.onGroupClicked(group));
         }

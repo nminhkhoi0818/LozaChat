@@ -28,6 +28,7 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -146,6 +147,14 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {
                     Group group = new Group();
                     group.id = documentChange.getDocument().getId();
+                    Boolean flag = false;
+                    for (int i = 0; i < groups.size(); ++i) {
+                        if (groups.get(i).id.equals(group.id)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag) break;
                     group.image = documentChange.getDocument().getString(Constants.KEY_IMAGE);
                     group.name = documentChange.getDocument().getString(Constants.KEY_NAME);
                     group.members = (ArrayList<String>) documentChange.getDocument().get(Constants.KEY_MEMBERS);
@@ -178,14 +187,18 @@ public class MessageFragment extends Fragment implements ConversationListener, G
     @Override
     public void OnConversationClicked(User user) {
         Intent intent = new Intent(getContext(), ChatActivity.class);
-        intent.putExtra(Constants.KEY_USER, user);
+        User new_user = new User(user);
+        new_user.image = "";
+        intent.putExtra(Constants.KEY_USER, new_user);
         startActivity(intent);
     }
 
     @Override
     public void onGroupClicked(Group group) {
         Intent intent = new Intent(getContext(), GroupChatActivity.class);
-        intent.putExtra(Constants.KEY_GROUP, group);
+        Group new_group = new Group(group);
+        new_group.image = "";
+        intent.putExtra(Constants.KEY_GROUP, new_group);
         startActivity(intent);
     }
 }

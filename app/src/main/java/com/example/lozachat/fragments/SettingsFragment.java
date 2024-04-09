@@ -22,19 +22,24 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.lozachat.activities.WelcomeActivity;
+import com.example.lozachat.adapters.ContactUsersAdapter;
 import com.example.lozachat.databinding.FragmentSettingsBinding;
+import com.example.lozachat.models.User;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
@@ -55,6 +60,31 @@ public class SettingsFragment extends Fragment {
                 documentReference.update(
                         Constants.KEY_IMAGE, bitmapString
                         );
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                        .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful() && task.getResult() != null) {
+                                for (QueryDocumentSnapshot doc : task.getResult()) {
+                                   database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(doc.getId()).update(
+                                        Constants.KEY_SENDER_IMAGE, bitmapString
+                                   );
+                                }
+                            }
+                        });
+
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                        .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful() && task.getResult() != null) {
+                                for (QueryDocumentSnapshot doc : task.getResult()) {
+                                    database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(doc.getId()).update(
+                                            Constants.KEY_RECEIVER_IMAGE, bitmapString
+                                    );
+                                }
+                            }
+                        });
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {

@@ -32,4 +32,6 @@ public class Constants {
     public static final String KEY_LAST_SENDER_ID = "lastSenderId";
     public static final String KEY_LAST_SENDER_NAME = "lastSenderName";
     public static final String KEY_GROUP = "group";
+    public static final String REMOTE_MSG_AUTHORIZATION = "Authorization";
+    public static final String REMOTE_MSG_CONTENT_TYPE = "Content-Type";
 }

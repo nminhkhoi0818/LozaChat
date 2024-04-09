@@ -12,6 +12,7 @@ import com.example.lozachat.R;
 import com.example.lozachat.databinding.ActivityMainBinding;
 import com.example.lozachat.fragments.ContactsFragment;
 import com.example.lozachat.fragments.MessageFragment;
+
 import com.example.lozachat.fragments.SettingsFragment;
 import com.google.android.material.navigation.NavigationBarView;
 

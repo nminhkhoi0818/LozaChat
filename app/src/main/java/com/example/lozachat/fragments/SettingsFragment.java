@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,7 +30,12 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 
 public class SettingsFragment extends Fragment {
@@ -39,10 +45,20 @@ public class SettingsFragment extends Fragment {
     ActivityResultLauncher<PickVisualMediaRequest> launcher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), new ActivityResultCallback<Uri>() {
         @Override
         public void onActivityResult(Uri o) {
-            if (o == null) {
-                Log.d("zzz", "DCM");
-            } else {
-                Glide.with(getContext()).load(o).into(binding.imageProfile);
+            Glide.with(getContext()).load(o).into(binding.imageProfile);
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), o);
+                String bitmapString = bitMapToString(bitmap);
+                preferenceManager.putString(Constants.KEY_IMAGE, bitmapString);
+                DocumentReference documentReference =
+                        database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
+                documentReference.update(
+                        Constants.KEY_IMAGE, bitmapString
+                        );
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     });
@@ -62,6 +78,8 @@ public class SettingsFragment extends Fragment {
         binding.userName.setText(preferenceManager.getString(Constants.KEY_NAME));
         binding.userEmail.setText(preferenceManager.getString(Constants.KEY_EMAIL));
         binding.imageProfile.setImageBitmap(getUserImage(preferenceManager.getString(Constants.KEY_IMAGE)));
+
+        database = FirebaseFirestore.getInstance();
     }
 
     private void setListeners() {
@@ -84,6 +102,14 @@ public class SettingsFragment extends Fragment {
         DocumentReference documentReference =
                 database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
         documentReference.update(Constants.KEY_FCM_TOKEN, token);
+    }
+
+    public String bitMapToString(Bitmap bitmap){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100, baos);
+        byte [] b = baos.toByteArray();
+        String temp = Base64.encodeToString(b, Base64.DEFAULT);
+        return temp;
     }
 
     private Bitmap getUserImage(String encodedImage) {

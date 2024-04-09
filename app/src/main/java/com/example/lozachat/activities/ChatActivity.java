@@ -102,6 +102,7 @@ public class ChatActivity extends BaseActivity implements ChatListener {
                            value.getLong(Constants.KEY_AVAILABILITY)
                    ).intValue();
                    isReceiverAvailable = availability == 1;
+                   receiverUser.token = value.getString(Constants.KEY_FCM_TOKEN);
                }
            }
            if (isReceiverAvailable) {

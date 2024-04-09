@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,9 +19,9 @@ import java.util.List;
 public class AddGroupAdapter extends RecyclerView.Adapter<AddGroupAdapter.AddGroupViewHolder> {
     private final List<User> users;
     private UserListener userListener = null;
-    public AddGroupAdapter (List<User> users) {
+    public AddGroupAdapter (List<User> users, UserListener userListener) {
         this.users = users;
-//        this.userListener = userListener;
+        this.userListener = userListener;
     }
 
     @NonNull
@@ -50,6 +51,13 @@ public class AddGroupAdapter extends RecyclerView.Adapter<AddGroupAdapter.AddGro
             binding.textName.setText(user.name);
             binding.textEmail.setText(user.email);
             binding.imageProfile.setImageBitmap(getUserImage(user.image));
+            binding.userCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        userListener.onUserClicked(user);
+                    }
+                }
+            );
         }
     }
 

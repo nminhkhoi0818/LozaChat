@@ -50,6 +50,8 @@ public class SettingsFragment extends Fragment {
     ActivityResultLauncher<PickVisualMediaRequest> launcher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), new ActivityResultCallback<Uri>() {
         @Override
         public void onActivityResult(Uri o) {
+            if (o == null)
+                return;
             Glide.with(getContext()).load(o).into(binding.imageProfile);
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), o);

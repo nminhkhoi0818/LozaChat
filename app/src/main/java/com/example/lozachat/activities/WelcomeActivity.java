@@ -7,14 +7,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lozachat.R;
 import com.example.lozachat.databinding.ActivityWelcomeBinding;
+import com.example.lozachat.utilities.Constants;
+import com.example.lozachat.utilities.PreferenceManager;
 
 public class WelcomeActivity extends AppCompatActivity {
     private ActivityWelcomeBinding binding;
-
+    private PreferenceManager preferenceManager;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityWelcomeBinding.inflate(getLayoutInflater());
+        preferenceManager = new PreferenceManager(getApplicationContext());
+        if (preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN)) {
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
         setContentView(binding.getRoot());
         setListeners();
     }

@@ -32,6 +32,7 @@
             app:layout_constraintStart_toEndOf="@id/backBtn"
             app:layout_constraintEnd_toEndOf="parent"
             android:hint="Search"
+            android:textColorHint="@color/grey_text"
             android:textColor="@color/dark"
             android:background="@drawable/edit_text_rounded_corner"
             android:padding="@dimen/_8sdp"

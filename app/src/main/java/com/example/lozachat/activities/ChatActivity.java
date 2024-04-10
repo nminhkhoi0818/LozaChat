@@ -22,10 +22,12 @@ import com.example.lozachat.adapters.ContactUsersAdapter;
 import com.example.lozachat.databinding.ActivityChatBinding;
 import com.example.lozachat.listeners.ChatListener;
 import com.example.lozachat.models.ChatMessage;
+import com.example.lozachat.models.Summary;
 import com.example.lozachat.models.User;
 import com.example.lozachat.network.ApiClient;
 import com.example.lozachat.network.ApiService;
 import com.example.lozachat.utilities.Constants;
+import com.example.lozachat.utilities.GptChatbot;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.DocumentChange;
@@ -46,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,7 +60,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ChatActivity extends BaseActivity implements ChatListener {
+public class ChatActivity extends BaseActivity implements ChatListener, GptChatbot.OnMessageReceivedListener {
     private ActivityChatBinding binding;
     private User receiverUser;
     private List<ChatMessage> chatMessages;
@@ -66,6 +69,8 @@ public class ChatActivity extends BaseActivity implements ChatListener {
     private FirebaseFirestore database;
     private String conversationId = null;
     private Boolean isReceiverAvailable = false;
+    private final int numberOfRecentMessage = 10;
+    private boolean isSummarizing = false;
     ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
             registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
                 // Callback is invoked after the user selects a media item or closes the
@@ -318,6 +323,12 @@ public class ChatActivity extends BaseActivity implements ChatListener {
         binding.imageBack.setOnClickListener(v -> finish());
         binding.layoutSend.setOnClickListener(v -> sendMessage());
         binding.layoutImage.setOnClickListener(v -> sendImage());
+        binding.imageInfo.setOnClickListener(v -> {
+            if (!isSummarizing) {
+                isSummarizing = true;
+                summarize();
+            }
+        });
     }
     private void sendImage() {
         pickMedia.launch(new PickVisualMediaRequest.Builder()
@@ -405,5 +416,63 @@ public class ChatActivity extends BaseActivity implements ChatListener {
                 conversationReference.delete();
             }
         }
+    }
+
+    private void summarize() {
+        database.collection(Constants.KEY_COLLECTION_SUMMARY)
+                .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverUser.id)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot document = task.getResult();
+
+                        if (document.size() > 0) {
+                            Summary summary = new Summary();
+                            for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                                summary.senderId = preferenceManager.getString(Constants.KEY_USER_ID);
+//                                summary.
+                            }
+                            isSummarizing = false;
+                        } else {
+                            summarizeWithAI();
+                        }
+                    }
+                });
+    }
+    private void summarizeWithAI() {
+        GptChatbot gptChatbot = new GptChatbot();
+        String prompt = "I have a conversation needed to be summarized, here are the messages:\n";
+        int count = 0;
+        ArrayList<String> chats = new ArrayList<>();
+        String receiverName = receiverUser.name;
+        String selfName = preferenceManager.getString(Constants.KEY_NAME);
+        for (int i = chatMessages.size() - 1; i >= 0; --i) {
+            if (chatMessages.get(i).type.equals("text") && chatMessages.get(i).message.length() < 51) {
+                if (chatMessages.get(i).senderId.equals(receiverUser.id)) {
+                    chats.add(receiverName + ": " + chatMessages.get(i).message);
+                } else {
+                    chats.add(selfName + ": " + chatMessages.get(i).message);
+                }
+                count++;
+            }
+            if (count >= numberOfRecentMessage) break;
+        }
+        Collections.reverse(chats);
+        prompt += String.join("\n", chats);
+        prompt += "\n\nSummarize the conversation above in one sentence, capturing the main topics and any important conclusions or agreements made.";
+        gptChatbot.sendMessage(prompt, this);
+    }
+    @Override
+    public void onMessageReceived(String message) {
+        HashMap<String, Object> summary = new HashMap<>();
+        summary.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+        summary.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
+        summary.put(Constants.KEY_SUMMARY_MESSAGE, message);
+        summary.put(Constants.KEY_TIMESTAMP, new Date());
+
+        database.collection(Constants.KEY_COLLECTION_SUMMARY).add(summary).addOnCompleteListener(task -> {
+            isSummarizing = false;
+        });
     }
 }

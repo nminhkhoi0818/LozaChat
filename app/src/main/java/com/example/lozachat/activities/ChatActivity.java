@@ -1,6 +1,8 @@
 package com.example.lozachat.activities;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -419,26 +421,18 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
     }
 
     private void summarize() {
-        database.collection(Constants.KEY_COLLECTION_SUMMARY)
-                .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-                .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverUser.id)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot document = task.getResult();
-
-                        if (document.size() > 0) {
-                            Summary summary = new Summary();
-                            for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                                summary.senderId = preferenceManager.getString(Constants.KEY_USER_ID);
-//                                summary.
-                            }
-                            isSummarizing = false;
-                        } else {
-                            summarizeWithAI();
-                        }
-                    }
-                });
+        new AlertDialog.Builder(ChatActivity.this, androidx.appcompat.R.style.Base_Theme_AppCompat_Light_Dialog_Alert)
+                .setTitle("Summarize messages")
+                .setMessage("Are you sure?")
+                .setPositiveButton("Confirm", (dialog, which) -> {
+                    summarizeWithAI();
+                }).setNegativeButton("Cancel", (dialog, which) -> {
+                    Intent intent = new Intent(getApplicationContext(), SummarizeActivity.class);
+                    intent.putExtra(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                    intent.putExtra(Constants.KEY_RECEIVER_ID, receiverUser.id);
+                    startActivity(intent);
+                    isSummarizing = false;
+                }).setIcon(android.R.drawable.ic_dialog_info).show();
     }
     private void summarizeWithAI() {
         GptChatbot gptChatbot = new GptChatbot();
@@ -472,7 +466,13 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
         summary.put(Constants.KEY_TIMESTAMP, new Date());
 
         database.collection(Constants.KEY_COLLECTION_SUMMARY).add(summary).addOnCompleteListener(task -> {
+            Intent intent = new Intent(getApplicationContext(), SummarizeActivity.class);
+            intent.putExtra(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+            intent.putExtra(Constants.KEY_RECEIVER_ID, receiverUser.id);
+            startActivity(intent);
             isSummarizing = false;
         });
+
+
     }
 }

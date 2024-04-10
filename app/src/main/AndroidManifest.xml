@@ -49,6 +49,10 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
             />
+        <activity android:name=".activities.SummarizeActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity android:name=".activities.AddGroupActivity"
             android:exported="true" />
 

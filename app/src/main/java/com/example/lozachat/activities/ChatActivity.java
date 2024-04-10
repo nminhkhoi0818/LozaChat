@@ -338,7 +338,7 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
                 .build());
     }
     private String getReadableDateTime(Date date) {
-        return new SimpleDateFormat("MMMM dd, yyyy - hh:mm a", Locale.getDefault()).format(date);
+        return new SimpleDateFormat("dd MMMM yyyy - hh:mm a", Locale.getDefault()).format(date);
     }
 
     private void addConversation(HashMap<String, Object> conversation) {

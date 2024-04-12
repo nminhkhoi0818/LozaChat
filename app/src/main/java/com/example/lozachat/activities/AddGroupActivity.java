@@ -1,15 +1,22 @@
 package com.example.lozachat.activities;
 
+import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.lozachat.R;
 import com.example.lozachat.adapters.AddGroupAdapter;
 import com.example.lozachat.databinding.ActivityAddGroupBinding;
@@ -17,11 +24,14 @@ import com.example.lozachat.listeners.UserListener;
 import com.example.lozachat.models.User;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,6 +42,15 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
     private PreferenceManager preferenceManager;
     private FirebaseFirestore database;
     ArrayList<User> selectedUsers = new ArrayList<>();
+    Uri uriCurrent;
+    ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                // Callback is invoked after the user selects a media item or closes the photo picker.
+                if (uri != null) {
+                    Glide.with(getApplicationContext()).load(uri).into(binding.imageGroupProfile);
+                    uriCurrent = uri;
+                }
+            });
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,9 +97,6 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
                             binding.usersRecyclerView.setAdapter(contactUsersAdapter);
                             binding.usersRecyclerView.setVisibility(View.VISIBLE);
                         }
-//                        else {
-//                            showErrorMessage();
-//                        }
                     }
                 });
     }
@@ -88,6 +104,12 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
     private void setListeners() {
         binding.backBtn.setOnClickListener(v -> {
             finish();
+        });
+
+        binding.imageGroupProfile.setOnClickListener(v -> {
+            pickMedia.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
         });
 
         binding.addGroupButton.setOnClickListener(v -> {
@@ -100,8 +122,15 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
             HashMap<String, Object> group = new HashMap<>();
             group.put(Constants.KEY_NAME, binding.inputGroupName.getText().toString());
             group.put(Constants.KEY_MEMBERS, members);
-            String encodedImage = getDefaultEncodedImage();
-            group.put(Constants.KEY_IMAGE, encodedImage);
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uriCurrent);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            Bitmap resizedBitmap = getResizedBitmap(bitmap, 1024); // Resize to max 1024px
+            String bitmapString = bitMapToString(resizedBitmap);
+            group.put(Constants.KEY_IMAGE, bitmapString);
             group.put(Constants.KEY_LAST_MESSAGE, "");
             group.put(Constants.KEY_LAST_SENDER_ID, "");
             group.put(Constants.KEY_LAST_SENDER_NAME, "");
@@ -113,6 +142,29 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
                     }
             );
         });
+    }
+
+    private Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+        return Bitmap.createScaledBitmap(image, width, height, true);
+    }
+
+    public String bitMapToString(Bitmap bitmap){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,80, baos);
+        byte [] b = baos.toByteArray();
+        String temp = Base64.encodeToString(b, Base64.DEFAULT);
+        return temp;
     }
 
     private void loading(Boolean isLoading) {

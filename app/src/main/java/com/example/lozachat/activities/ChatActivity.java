@@ -252,14 +252,14 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
                             JSONArray results = responseJSON.getJSONArray("results");
                             if (responseJSON.getInt("failure") == 1) {
                                 JSONObject error = (JSONObject) results.get(0);
-                                showToast(error.getString("error"));
+//                                showToast(error.getString("error"));
                                 return;
                             }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    showToast("Notification sent successfully");
+//                    showToast("Notification sent successfully");
                 }
             }
 

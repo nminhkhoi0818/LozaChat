@@ -2,6 +2,7 @@ package com.example.lozachat.adapters;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -57,6 +58,11 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
             binding.imageProfile.setImageBitmap(getConversationBitmap(chatMessage.conversationImage));
             binding.textName.setText(chatMessage.conversationName);
             binding.textRecentMessage.setText(chatMessage.message);
+            if (!chatMessage.seen) {
+                binding.textRecentMessage.setTypeface(null, Typeface.BOLD);
+            } else {
+                binding.textRecentMessage.setTypeface(null, Typeface.NORMAL);
+            }
             binding.getRoot().setOnClickListener(v -> {
                 User user = new User();
                 user.id = chatMessage.conversationId;

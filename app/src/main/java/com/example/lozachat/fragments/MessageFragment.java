@@ -106,6 +106,12 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                         chatMessage.conversationName = documentChange.getDocument().getString(Constants.KEY_SENDER_NAME);
                         chatMessage.conversationId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     }
+
+                    if (!preferenceManager.getString(Constants.KEY_USER_ID).equals(documentChange.getDocument().getString(Constants.KEY_LAST_SENDER_ID))) {
+                        chatMessage.seen = documentChange.getDocument().getBoolean(Constants.KEY_SEEN);
+                    } else {
+                        chatMessage.seen = true;
+                    }
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                     chatMessage.dateObject =  documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     conversations.add(chatMessage);
@@ -116,6 +122,11 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                         if (conversations.get(i).senderId.equals(senderId) && conversations.get(i).receiverId.equals(receiverId)) {
                             conversations.get(i).message = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                             conversations.get(i).dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                            if (!preferenceManager.getString(Constants.KEY_USER_ID).equals(documentChange.getDocument().getString(Constants.KEY_LAST_SENDER_ID))) {
+                                conversations.get(i).seen = documentChange.getDocument().getBoolean(Constants.KEY_SEEN);
+                            } else {
+                                conversations.get(i).seen = true;
+                            }
                             break;
                         }
                     }

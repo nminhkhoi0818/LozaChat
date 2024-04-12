@@ -94,6 +94,8 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
                         } else {
                             HashMap<String, Object> conversation = new HashMap<>();
                             conversation.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                            conversation.put(Constants.KEY_LAST_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                            conversation.put(Constants.KEY_SEEN, false);
                             conversation.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
                             conversation.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
                             conversation.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
@@ -162,6 +164,8 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
         } else {
             HashMap<String, Object> conversation = new HashMap<>();
             conversation.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+            conversation.put(Constants.KEY_LAST_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+            conversation.put(Constants.KEY_SEEN, false);
             conversation.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
             conversation.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
             conversation.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
@@ -351,6 +355,8 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
                 database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
         documentReference.update(
                 Constants.KEY_LAST_MESSAGE, message,
+                Constants.KEY_SEEN, false,
+                Constants.KEY_LAST_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID),
                 Constants.KEY_TIMESTAMP, new Date()
         );
     }
@@ -377,6 +383,13 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
         if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
             DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
             conversationId = documentSnapshot.getId();
+            if (!documentSnapshot.getString(Constants.KEY_LAST_SENDER_ID).equals(preferenceManager.getString(Constants.KEY_USER_ID))) {
+                DocumentReference documentReference =
+                        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
+                documentReference.update(
+                        Constants.KEY_SEEN, true
+                );
+            }
         }
     };
     public String bitMapToString(Bitmap bitmap){
@@ -405,12 +418,14 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
                 if (!prevChatMessage.type.equals("image")) {
                     conversationReference.update(
                             Constants.KEY_LAST_MESSAGE, prevChatMessage.message,
+                            Constants.KEY_LAST_SENDER_ID, prevChatMessage.senderId,
                             Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
                     );
                 }
                 else {
                     conversationReference.update(
                             Constants.KEY_LAST_MESSAGE, "Sent an image",
+                            Constants.KEY_LAST_SENDER_ID, prevChatMessage.senderId,
                             Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
                     );
                 }

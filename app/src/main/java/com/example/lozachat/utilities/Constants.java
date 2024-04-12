@@ -38,6 +38,7 @@ public class Constants {
     public static final String KEY_COLLECTION_SUMMARY = "summary";
     public static final String KEY_SUMMARY_MESSAGE = "summaryMessage";
     public static final String KEY_LAST_MESSAGE_TYPE = "lastMessageType";
+    public static final String KEY_SEEN = "seen";
     public static final String REMOTE_MSG_AUTHORIZATION = "Authorization";
     public static final String REMOTE_MSG_CONTENT_TYPE = "Content-Type";
     public static final String REMOTE_MSG_DATA = "data";

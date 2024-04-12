@@ -1,8 +1,6 @@
 package com.example.lozachat.activities;
 
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.Nullable;
@@ -62,7 +60,7 @@ public class SummarizeActivity extends AppCompatActivity {
                     summary.summaryMessage = queryDocumentSnapshot.getString(Constants.KEY_SUMMARY_MESSAGE);
                     summary.dateTime = getReadableDateTime(queryDocumentSnapshot.getDate(Constants.KEY_TIMESTAMP));
                     summary.dateObject = queryDocumentSnapshot.getDate(Constants.KEY_TIMESTAMP);
-                    summaries.add(summary.dateTime + "\n" + summary.summaryMessage);
+                    summaries.add(summary.dateTime + summary.summaryMessage);
                 }
                 adapter = new ArrayAdapter<String>(this, R.layout.item_container_summarize, R.id.message, summaries);
                 binding.summarizeList.setAdapter(adapter);

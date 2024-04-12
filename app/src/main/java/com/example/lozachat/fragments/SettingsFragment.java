@@ -47,63 +47,87 @@ public class SettingsFragment extends Fragment {
     FragmentSettingsBinding binding;
     private PreferenceManager preferenceManager;
     private FirebaseFirestore database;
-    ActivityResultLauncher<PickVisualMediaRequest> launcher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), new ActivityResultCallback<Uri>() {
-        @Override
-        public void onActivityResult(Uri o) {
-            if (o == null)
-                return;
-            Glide.with(getContext()).load(o).into(binding.imageProfile);
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), o);
-                String bitmapString = bitMapToString(bitmap);
-                preferenceManager.putString(Constants.KEY_IMAGE, bitmapString);
-                DocumentReference documentReference =
-                        database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
-                documentReference.update(
-                        Constants.KEY_IMAGE, bitmapString
-                        );
-                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                        .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful() && task.getResult() != null) {
-                                for (QueryDocumentSnapshot doc : task.getResult()) {
-                                   database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(doc.getId()).update(
-                                        Constants.KEY_SENDER_IMAGE, bitmapString
-                                   );
-                                }
-                            }
-                        });
+    private ActivityResultLauncher<PickVisualMediaRequest> launcher;
 
-                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                        .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-                        .get()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful() && task.getResult() != null) {
-                                for (QueryDocumentSnapshot doc : task.getResult()) {
-                                    database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(doc.getId()).update(
-                                            Constants.KEY_RECEIVER_IMAGE, bitmapString
-                                    );
-                                }
-                            }
-                        });
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    });
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
-        View view = binding.getRoot();
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         preferenceManager = new PreferenceManager(getContext());
         init();
         setListeners();
         getToken();
-        return view;
+
+        launcher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+            if (uri == null)
+                return;
+            Glide.with(getContext()).load(uri).into(binding.imageProfile);
+            handleImageSelection(uri);
+        });
+    }
+
+    private void handleImageSelection(Uri uri) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+            Bitmap resizedBitmap = getResizedBitmap(bitmap, 1024); // Resize to max 1024px
+            String bitmapString = bitMapToString(resizedBitmap);
+            preferenceManager.putString(Constants.KEY_IMAGE, bitmapString);
+            DocumentReference documentReference =
+                    database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
+            documentReference.update(
+                    Constants.KEY_IMAGE, bitmapString
+            );
+            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                    .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            for (QueryDocumentSnapshot doc : task.getResult()) {
+                                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(doc.getId()).update(
+                                        Constants.KEY_SENDER_IMAGE, bitmapString
+                                );
+                            }
+                        }
+                    });
+
+            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                    .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            for (QueryDocumentSnapshot doc : task.getResult()) {
+                                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(doc.getId()).update(
+                                        Constants.KEY_RECEIVER_IMAGE, bitmapString
+                                );
+                            }
+                        }
+                    });
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+        return Bitmap.createScaledBitmap(image, width, height, true);
     }
 
     private void init() {
@@ -139,7 +163,7 @@ public class SettingsFragment extends Fragment {
 
     public String bitMapToString(Bitmap bitmap){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100, baos);
+        bitmap.compress(Bitmap.CompressFormat.JPEG,80, baos);
         byte [] b = baos.toByteArray();
         String temp = Base64.encodeToString(b, Base64.DEFAULT);
         return temp;

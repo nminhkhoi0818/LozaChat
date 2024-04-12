@@ -96,8 +96,7 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
                             user.email = queryDocumentSnapshot.getString(Constants.KEY_EMAIL);
                             user.image = queryDocumentSnapshot.getString(Constants.KEY_IMAGE);
                             user.id = queryDocumentSnapshot.getId();
-                            // Handle logout using token tutorial 5
-                            // user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
+                            user.token = queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN);
                             users.add(user);
                         }
                         if (users.size() > 0) {

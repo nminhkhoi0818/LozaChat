@@ -62,7 +62,7 @@ public class SettingsFragment extends Fragment {
         preferenceManager = new PreferenceManager(getContext());
         init();
         setListeners();
-        getToken();
+
 
         launcher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
             if (uri == null)
@@ -147,18 +147,6 @@ public class SettingsFragment extends Fragment {
                     .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                     .build());
         });
-    }
-
-    private void getToken() {
-        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken);
-    }
-
-    private void updateToken(String token) {
-        preferenceManager.putString(Constants.KEY_FCM_TOKEN, token);
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
-        DocumentReference documentReference =
-                database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
-        documentReference.update(Constants.KEY_FCM_TOKEN, token);
     }
 
     public String bitMapToString(Bitmap bitmap){

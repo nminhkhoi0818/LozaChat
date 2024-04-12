@@ -19,7 +19,6 @@ import java.util.List;
 public class AddFriendAdapter extends RecyclerView.Adapter<AddFriendAdapter.AddFriendViewHolder> {
     private final List<User> users;
     private UserListener userListener = null;
-    private PreferenceManager preferenceManager;
     public AddFriendAdapter (List<User> users, UserListener userListener) {
         this.users = users;
         this.userListener = userListener;

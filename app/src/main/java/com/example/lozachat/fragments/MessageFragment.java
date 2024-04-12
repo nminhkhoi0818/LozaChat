@@ -172,6 +172,11 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                     group.lastMessage =  documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                     group.lastSenderId =  documentChange.getDocument().getString(Constants.KEY_LAST_SENDER_ID);
                     group.lastSenderName =  documentChange.getDocument().getString(Constants.KEY_LAST_SENDER_NAME);
+                    if (preferenceManager.getString(Constants.KEY_USER_ID).equals(group.lastSenderId)) {
+                        group.seen = true;
+                    } else {
+                        group.seen = documentChange.getDocument().getBoolean(Constants.KEY_SEEN);
+                    }
                     group.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     groups.add(group);
                 } else if (documentChange.getType() == DocumentChange.Type.MODIFIED) {
@@ -182,6 +187,11 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                             groups.get(i).lastSenderId =  documentChange.getDocument().getString(Constants.KEY_LAST_SENDER_ID);
                             groups.get(i).lastSenderName =  documentChange.getDocument().getString(Constants.KEY_LAST_SENDER_NAME);
                             groups.get(i).dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+                            if (preferenceManager.getString(Constants.KEY_USER_ID).equals(groups.get(i).lastSenderId)) {
+                                groups.get(i).seen = true;
+                            } else {
+                                groups.get(i).seen = documentChange.getDocument().getBoolean(Constants.KEY_SEEN);
+                            }
                             break;
                         }
                     }

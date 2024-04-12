@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 public class Group implements Serializable {
     public String id, name, image, lastMessage, lastSenderId, lastSenderName, dateTime;
+    public Boolean seen;
     public ArrayList<String> members;
     public Date dateObject;
     public HashMap<String, String> membersImage, membersName;
@@ -14,6 +15,7 @@ public class Group implements Serializable {
     public Group(Group group) {
         this.id = group.id;
         this.name = group.name;
+        this.seen = group.seen;
         this.image = group.image;
         this.lastMessage = group.lastMessage;
         this.lastSenderId = group.lastSenderId;

@@ -134,6 +134,7 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
             group.put(Constants.KEY_LAST_MESSAGE, "");
             group.put(Constants.KEY_LAST_SENDER_ID, "");
             group.put(Constants.KEY_LAST_SENDER_NAME, "");
+            group.put(Constants.KEY_SEEN, true);
             group.put(Constants.KEY_TIMESTAMP, new Date());
 
             database.collection(Constants.KEY_COLLECTION_GROUP).add(group).addOnCompleteListener(

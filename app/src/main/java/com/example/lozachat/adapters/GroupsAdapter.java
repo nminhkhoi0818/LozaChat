@@ -2,6 +2,7 @@ package com.example.lozachat.adapters;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -64,6 +65,11 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.GroupViewH
                 binding.textRecentMessage.setText(String.format("%s: %s", group.lastSenderName, group.lastMessage));
             } else {
                 binding.textRecentMessage.setText("");
+            }
+            if (!group.seen) {
+                binding.textRecentMessage.setTypeface(null, Typeface.BOLD);
+            } else {
+                binding.textRecentMessage.setTypeface(null, Typeface.NORMAL);
             }
             binding.imageProfile.setImageBitmap(getUserImage(group.image));
             binding.getRoot().setOnClickListener(v -> groupListener.onGroupClicked(group));

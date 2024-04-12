@@ -75,6 +75,7 @@ public class GroupChatActivity extends BaseActivity implements ChatListener {
                         documentReference.update(
                                 Constants.KEY_LAST_MESSAGE, "Sent an image",
                                 Constants.KEY_LAST_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID),
+                                Constants.KEY_SEEN, false,
                                 Constants.KEY_LAST_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME),
                                 Constants.KEY_TIMESTAMP, new Date()
                         );
@@ -147,6 +148,7 @@ public class GroupChatActivity extends BaseActivity implements ChatListener {
         documentReference.update(
                 Constants.KEY_LAST_MESSAGE, messageToSend,
                 Constants.KEY_LAST_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID),
+                Constants.KEY_SEEN, false,
                 Constants.KEY_LAST_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME),
                 Constants.KEY_TIMESTAMP, new Date()
         );
@@ -178,6 +180,13 @@ public class GroupChatActivity extends BaseActivity implements ChatListener {
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, group.id)
                 .addSnapshotListener(eventListener);
+        if (!preferenceManager.getString(Constants.KEY_USER_ID).equals(group.lastSenderId)) {
+            DocumentReference documentReference =
+                database.collection(Constants.KEY_COLLECTION_GROUP).document(group.id);
+            documentReference.update(
+                    Constants.KEY_SEEN, true
+            );
+        }
     }
     @SuppressLint("NotifyDataSetChanged")
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {

@@ -44,8 +44,9 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
     private PreferenceManager preferenceManager;
     private FirebaseFirestore database;
     private List<FriendRequest> friendRequests;
+    private List<User> users;
     private FriendRequestsAdapter friendRequestsAdapter;
-
+    private ContactUsersAdapter contactUsersAdapter;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -53,8 +54,8 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
         View view = binding.getRoot();
         preferenceManager = new PreferenceManager(getContext());
         init();
-        getUsers();
-        listenFriendRequests();
+//        getUsers();
+        listenData();
         setListeners();
         return view;
     }
@@ -62,6 +63,9 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
         friendRequests = new ArrayList<>();
         friendRequestsAdapter = new FriendRequestsAdapter(friendRequests, this);
         binding.friendRequestsRecyclerView.setAdapter(friendRequestsAdapter);
+        users = new ArrayList<>();
+        contactUsersAdapter = new ContactUsersAdapter(users, this);
+        binding.usersRecyclerView.setAdapter(contactUsersAdapter);
         database = FirebaseFirestore.getInstance();
     }
 
@@ -112,11 +116,51 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
                 });
     }
 
-    private void listenFriendRequests() {
+    private void listenData() {
         database.collection(Constants.KEY_COLLECTION_FRIEND_REQUESTS)
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
+        database.collection(Constants.KEY_COLLECTION_USERS)
+                .whereArrayContains(Constants.KEY_FRIENDS_LIST, preferenceManager.getString(Constants.KEY_USER_ID))
+                .addSnapshotListener(eventListener2);
     }
+    private final EventListener<QuerySnapshot> eventListener2 = (value, error) -> {
+        if (error != null) {
+            return;
+        }
+        if (value != null) {
+            for (DocumentChange documentChange: value.getDocumentChanges()) {
+                if (documentChange.getType() == DocumentChange.Type.ADDED) {
+                    String currentUserId = preferenceManager.getString(Constants.KEY_USER_ID);
+                    if (currentUserId.equals(documentChange.getDocument().getId())) {
+                        continue;
+                    }
+
+                    User user = new User();
+                    user.id = documentChange.getDocument().getId();
+                    Boolean flag = false;
+                    for (int i = 0; i < users.size(); ++i) {
+                        if (users.get(i).id.equals(user.id)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag) continue;
+
+                    user.name = documentChange.getDocument().getString(Constants.KEY_NAME);
+                    user.email = documentChange.getDocument().getString(Constants.KEY_EMAIL);
+                    user.image = documentChange.getDocument().getString(Constants.KEY_IMAGE);
+                    user.token = documentChange.getDocument().getString(Constants.KEY_FCM_TOKEN);
+                    users.add(user);
+                }
+            }
+//            friendRequests.sort(Comparator.comparing(obj -> obj.dateObject));
+            contactUsersAdapter.notifyDataSetChanged();
+            binding.usersRecyclerView.smoothScrollToPosition(0);
+            binding.usersRecyclerView.setVisibility(View.VISIBLE);
+//            binding.progressBar.setVisibility(View.GONE);
+        }
+    };
 
     private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
         if (error != null) {
@@ -129,6 +173,14 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
                     String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     FriendRequest friendRequest = new FriendRequest();
                     friendRequest.id = documentChange.getDocument().getId();
+                    Boolean flag = false;
+                    for (int i = 0; i < friendRequests.size(); ++i) {
+                        if (friendRequests.get(i).id.equals(friendRequest.id)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag) continue;
                     friendRequest.senderId = senderId;
                     friendRequest.receiverId = receiverId;
                     if (preferenceManager.getString(Constants.KEY_USER_ID).equals(receiverId)) {
@@ -181,7 +233,7 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
         ArrayList<String> friends = preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST);
         friends.add(friendRequest.senderId);
         preferenceManager.putArrayList(Constants.KEY_FRIENDS_LIST, friends);
-        getUsers();
+//        getUsers();
     }
 
     @Override

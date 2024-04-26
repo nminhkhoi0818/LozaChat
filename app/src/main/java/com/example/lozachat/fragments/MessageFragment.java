@@ -95,6 +95,15 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                     String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
                     String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                     ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.chatId = documentChange.getDocument().getId();
+                    Boolean flag = false;
+                    for (int i = 0; i < conversations.size(); ++i) {
+                        if (conversations.get(i).chatId.equals(chatMessage.chatId)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag) continue;
                     chatMessage.senderId = senderId;
                     chatMessage.receiverId = receiverId;
                     if (preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId)) {

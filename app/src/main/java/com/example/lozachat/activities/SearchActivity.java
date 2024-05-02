@@ -125,4 +125,9 @@ public class SearchActivity extends AppCompatActivity implements UserListener {
         friendRequest.put(Constants.KEY_TIMESTAMP, new Date());
         database.collection(Constants.KEY_COLLECTION_FRIEND_REQUESTS).add(friendRequest);
     }
+
+    @Override
+    public void onUserLongClicked(User user) {
+
+    }
 }

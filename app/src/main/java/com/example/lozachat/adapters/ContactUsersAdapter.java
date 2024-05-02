@@ -1,5 +1,6 @@
 package com.example.lozachat.adapters;
 
+import android.app.AlertDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
@@ -72,6 +73,24 @@ public class ContactUsersAdapter extends RecyclerView.Adapter<ContactUsersAdapte
                 binding.header.setVisibility(View.VISIBLE);
             }
             binding.getRoot().setOnClickListener(v -> userListener.onUserClicked(user));
+            binding.getRoot().setOnLongClickListener(v -> {
+                new AlertDialog.Builder(itemView.getContext(), androidx.appcompat.R.style.Base_Theme_AppCompat_Light_Dialog_Alert)
+                        .setTitle("Unfriend")
+                        .setMessage("Are you sure?")
+                        .setPositiveButton("Confirm", (dialog, which) -> {
+                            for (int i = 0; i < getItemCount(); ++i) {
+                                if (users.get(i).id.equals(user.id)) {
+                                    users.remove(i);
+                                    userListener.onUserLongClicked(user);
+                                    notifyItemRemoved(i);
+                                    break;
+                                }
+                            }
+                        }).setNegativeButton("Cancel", (dialog, which) -> {
+                            // do nothing
+                        }).setIcon(android.R.drawable.ic_dialog_alert).show();
+                return false;
+            });
         }
     }
     private Bitmap getUserImage(String encodedImage) {

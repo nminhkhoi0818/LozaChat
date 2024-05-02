@@ -27,6 +27,7 @@ import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
@@ -81,7 +82,6 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
             loading(false);
             return;
         }
-        loading(true);
         database.collection(Constants.KEY_COLLECTION_USERS)
                 .whereIn(FieldPath.documentId(), preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST))
                 .get()
@@ -152,6 +152,15 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
                     user.image = documentChange.getDocument().getString(Constants.KEY_IMAGE);
                     user.token = documentChange.getDocument().getString(Constants.KEY_FCM_TOKEN);
                     users.add(user);
+                } else if (documentChange.getType() == DocumentChange.Type.REMOVED) {
+                    for (int i = 0; i < users.size(); ++i) {
+                        if (users.get(i).id.equals(documentChange.getDocument().getId())) {
+                            users.remove(i);
+                            contactUsersAdapter.notifyItemRemoved(i);
+                            return;
+                        }
+                    }
+                    return;
                 }
             }
 //            friendRequests.sort(Comparator.comparing(obj -> obj.dateObject));
@@ -219,6 +228,72 @@ public class ContactsFragment extends Fragment implements UserListener, FriendRe
         new_user.image = "";
         intent.putExtra(Constants.KEY_USER, new_user);
         startActivity(intent);
+    }
+
+    @Override
+    public void onUserLongClicked(User user) {
+        DocumentReference friendReference =
+                database.collection(Constants.KEY_COLLECTION_USERS).document(user.id);
+        String selfId = preferenceManager.getString(Constants.KEY_USER_ID);
+        DocumentReference userReference =
+                database.collection(Constants.KEY_COLLECTION_USERS).document(selfId);
+        friendReference.update(
+                Constants.KEY_FRIENDS_LIST, FieldValue.arrayRemove(selfId)
+        );
+        userReference.update(
+                Constants.KEY_FRIENDS_LIST, FieldValue.arrayRemove(user.id)
+        );
+        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                .whereEqualTo(Constants.KEY_SENDER_ID, selfId)
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, user.id)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
+                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                        DocumentReference ref =
+                                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(documentSnapshot.getId());
+                        ref.delete();
+                    }
+                });
+
+        database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                .whereEqualTo(Constants.KEY_SENDER_ID, user.id)
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, selfId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null && task.getResult().getDocuments().size() > 0) {
+                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                        DocumentReference ref =
+                                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(documentSnapshot.getId());
+                        ref.delete();
+                    }
+                });
+
+//        chatReference.delete();
+
+//        if (conversationId != null) {
+//            DocumentReference conversationReference =
+//                    database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(conversationId);
+//            if (chatAdapter.getItemCount() > 0) {
+//                ChatMessage prevChatMessage = chatAdapter.getItem(chatAdapter.getItemCount() - 1);
+//                if (!prevChatMessage.type.equals("image")) {
+//                    conversationReference.update(
+//                            Constants.KEY_LAST_MESSAGE, prevChatMessage.message,
+//                            Constants.KEY_LAST_SENDER_ID, prevChatMessage.senderId,
+//                            Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
+//                    );
+//                }
+//                else {
+//                    conversationReference.update(
+//                            Constants.KEY_LAST_MESSAGE, "Sent an image",
+//                            Constants.KEY_LAST_SENDER_ID, prevChatMessage.senderId,
+//                            Constants.KEY_TIMESTAMP, prevChatMessage.dateObject
+//                    );
+//                }
+//            } else {
+//                conversationReference.delete();
+//            }
+//        }
     }
 
     @Override

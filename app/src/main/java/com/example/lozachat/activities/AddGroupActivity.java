@@ -192,4 +192,9 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
             selectedUsers.add(user);
         }
     }
+
+    @Override
+    public void onUserLongClicked(User user) {
+
+    }
 }

@@ -177,9 +177,9 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
         }
 
         if (!isReceiverAvailable) {
-            database.collection(Constants.KEY_MUTE_STATUS)
-                    .whereEqualTo(Constants.KEY_USER_ID, receiverUser.id)
-                    .whereArrayContains(Constants.KEY_MUTED, preferenceManager.getString(Constants.KEY_USER_ID))
+            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                    .whereEqualTo(FieldPath.documentId(), conversationId)
+                    .whereArrayContains(Constants.KEY_MUTED, receiverUser.id)
                     .get()
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful() && task.getResult().isEmpty()) {
@@ -199,7 +199,7 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
 
                                 sendNotification(body.toString());
                             } catch (Exception exception) {
-                                showToast(exception.getMessage());
+//                                showToast(exception.getMessage());
                             }
                         }
                     });
@@ -274,7 +274,7 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
 
             @Override
             public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
-                showToast(t.getMessage());
+//                showToast(t.getMessage());
             }
         });
     }

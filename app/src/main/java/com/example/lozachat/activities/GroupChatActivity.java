@@ -9,6 +9,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -22,6 +23,8 @@ import com.example.lozachat.listeners.ChatListener;
 import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.Group;
 import com.example.lozachat.models.User;
+import com.example.lozachat.network.ApiClient;
+import com.example.lozachat.network.ApiService;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -35,6 +38,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,6 +53,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class GroupChatActivity extends BaseActivity implements ChatListener {
     private ActivityChatBinding binding;
@@ -153,6 +164,84 @@ public class GroupChatActivity extends BaseActivity implements ChatListener {
                 Constants.KEY_TIMESTAMP, new Date()
         );
         binding.inputMessage.setText(null);
+        for (String memberId : group.members) {
+            if (memberId.equals(preferenceManager.getString(Constants.KEY_USER_ID))) {
+                continue;
+            }
+            database.collection(Constants.KEY_COLLECTION_GROUP)
+                .whereEqualTo(FieldPath.documentId(), group.id)
+                .whereArrayContains(Constants.KEY_MUTED, memberId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult().isEmpty()) {
+                        DocumentReference ref = database.collection(Constants.KEY_COLLECTION_USERS).document(memberId);
+                        ref.get().addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful()) {
+                                DocumentSnapshot document = task1.getResult();
+                                if (document.exists() && document.getLong(Constants.KEY_AVAILABILITY) != null && Objects.requireNonNull(
+                                        document.getLong(Constants.KEY_AVAILABILITY)
+                                ).intValue() == 0) {
+                                    try {
+                                        JSONArray tokens = new JSONArray();
+                                        tokens.put(document.getString(Constants.KEY_FCM_TOKEN));
+
+                                        JSONObject data = new JSONObject();
+                                        data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                                        data.put(Constants.KEY_NAME, group.name);
+                                        data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                                        data.put(Constants.KEY_MESSAGE, messageToSend);
+
+                                        JSONObject body = new JSONObject();
+                                        body.put(Constants.REMOTE_MSG_DATA, data);
+                                        body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+
+                                        sendNotification(body.toString());
+                                    } catch (Exception exception) {
+//                                        showToast(exception.getMessage());
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+        }
+
+    }
+
+    private void sendNotification(String messageBody) {
+        ApiClient.getClient().create(ApiService.class).sendMessage(
+                Constants.getRemoteMsgHeaders(),
+                messageBody
+        ).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        if (response.body() != null) {
+                            JSONObject responseJSON = new JSONObject(response.body());
+                            JSONArray results = responseJSON.getJSONArray("results");
+                            if (responseJSON.getInt("failure") == 1) {
+                                JSONObject error = (JSONObject) results.get(0);
+//                                showToast(error.getString("error"));
+                                return;
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+//                    showToast("Notification sent successfully");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
+//                showToast(t.getMessage());
+            }
+        });
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 //    private void listenAvailabilityOfReceiver() {
 //        database.collection(Constants.KEY_COLLECTION_USERS).document(

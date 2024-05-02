@@ -79,7 +79,7 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
             }
             binding.notificationButton.setOnClickListener(v -> {
                 User user = new User();
-                user.id = chatMessage.conversationId;
+                user.id = chatMessage.chatId;
                 conversationListener.OnMuteClicked(user);
             });
             binding.getRoot().setOnClickListener(v -> {

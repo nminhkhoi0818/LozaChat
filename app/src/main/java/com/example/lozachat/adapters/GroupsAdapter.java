@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -71,7 +72,13 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.GroupViewH
             } else {
                 binding.textRecentMessage.setTypeface(null, Typeface.NORMAL);
             }
+            if (group.muted) {
+                binding.notificationButton.setVisibility(View.GONE);
+            }
             binding.imageProfile.setImageBitmap(getUserImage(group.image));
+            binding.notificationButton.setOnClickListener(v -> {
+                groupListener.OnGroupMuteClicked(group);
+            });
             binding.getRoot().setOnClickListener(v -> groupListener.onGroupClicked(group));
         }
     }

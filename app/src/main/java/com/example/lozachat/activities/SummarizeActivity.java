@@ -66,5 +66,6 @@ public class SummarizeActivity extends AppCompatActivity {
                 binding.summarizeList.setAdapter(adapter);
             }
         });
+        binding.backBtn.setOnClickListener(v -> finish());
     }
 }

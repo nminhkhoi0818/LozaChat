@@ -63,14 +63,14 @@ public class SignUpActivity extends AppCompatActivity {
                 .add(user)
                 .addOnSuccessListener(documentReference -> {
                     loading(false);
-                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
-                    preferenceManager.putString(Constants.KEY_USER_ID, documentReference.getId());
-                    preferenceManager.putString(Constants.KEY_EMAIL, binding.inputEmail.getText().toString());
-                    preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
-                    preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
-                    preferenceManager.putArrayList(Constants.KEY_FRIENDS_LIST, new ArrayList<>());
+//                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
+//                    preferenceManager.putString(Constants.KEY_USER_ID, documentReference.getId());
+//                    preferenceManager.putString(Constants.KEY_EMAIL, binding.inputEmail.getText().toString());
+//                    preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
+//                    preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
+//                    preferenceManager.putArrayList(Constants.KEY_FRIENDS_LIST, new ArrayList<>());
 
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
                     startActivity(intent);
                 })
                 .addOnFailureListener(exception -> {

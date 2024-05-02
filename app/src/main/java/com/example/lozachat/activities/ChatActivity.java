@@ -283,7 +283,7 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
         if (error != null) {
             return;
         }
-        if (value != null && !value.getMetadata().isFromCache()) {
+        if (value != null) {
             int count = chatMessages.size();
             for (DocumentChange documentChange: value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {

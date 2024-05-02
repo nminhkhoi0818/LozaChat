@@ -25,8 +25,11 @@ import com.example.lozachat.models.User;
 import com.example.lozachat.utilities.Constants;
 import com.example.lozachat.utilities.PreferenceManager;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -34,6 +37,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 public class MessageFragment extends Fragment implements ConversationListener, GroupListener {
@@ -123,7 +127,23 @@ public class MessageFragment extends Fragment implements ConversationListener, G
                     }
                     chatMessage.message = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
                     chatMessage.dateObject =  documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
-                    conversations.add(chatMessage);
+                    database.collection(Constants.KEY_MUTE_STATUS)
+                                    .whereEqualTo(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID)).whereArrayContains(Constants.KEY_MUTED, chatMessage.conversationId).get()
+                                    .addOnCompleteListener(task -> {
+                                        if (task.isSuccessful() && task.getResult().isEmpty()) {
+                                            chatMessage.muted = false;
+                                        }
+                                        else {
+                                            chatMessage.muted = true;
+                                        }
+                                        conversations.add(chatMessage);
+                                        conversations.sort(Collections.reverseOrder(Comparator.comparing(obj -> obj.dateObject)));
+                                        conversationsAdapter.notifyDataSetChanged();
+                                        binding.conversationRecyclerView.smoothScrollToPosition(0);
+                                        binding.conversationRecyclerView.setVisibility(View.VISIBLE);
+                                        binding.progressBar.setVisibility(View.GONE);
+                                    });
+
                 } else if (documentChange.getType() == DocumentChange.Type.MODIFIED) {
                     for (int i = 0; i < conversations.size(); ++i) {
                         String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
@@ -221,6 +241,30 @@ public class MessageFragment extends Fragment implements ConversationListener, G
         new_user.image = "";
         intent.putExtra(Constants.KEY_USER, new_user);
         startActivity(intent);
+    }
+
+    @Override
+    public void OnMuteClicked(User user) {
+        database.collection(Constants.KEY_MUTE_STATUS)
+                .whereEqualTo(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                .get()
+                .addOnCompleteListener(task -> {
+                   if (task.isSuccessful()) {
+                       if (task.getResult().isEmpty()) {
+                           HashMap<String, Object> muted = new HashMap<>();
+                           muted.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                           ArrayList<String> users = new ArrayList<>();
+                           users.add(user.id);
+                           muted.put(Constants.KEY_MUTED, users);
+                           database.collection(Constants.KEY_MUTE_STATUS).add(muted);
+                       } else {
+                           DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+                           DocumentReference documentReference = database.collection(Constants.KEY_MUTE_STATUS).document(documentSnapshot.getId());
+                           documentReference.update(Constants.KEY_MUTED, FieldValue.arrayUnion(user.id));
+                       }
+                   }
+                });
+
     }
 
     @Override

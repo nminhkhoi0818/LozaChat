@@ -5,21 +5,32 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.util.Base64;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lozachat.activities.MainActivity;
 import com.example.lozachat.databinding.ItemContainerRecentConversationBinding;
 import com.example.lozachat.listeners.ConversationListener;
 import com.example.lozachat.models.ChatMessage;
 import com.example.lozachat.models.User;
+import com.example.lozachat.utilities.Constants;
+import com.example.lozachat.utilities.PreferenceManager;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConversationsAdapter.ConversationViewHolder> {
     private final List<ChatMessage> chatMessages;
     private final ConversationListener conversationListener;
+    private FirebaseFirestore database = FirebaseFirestore.getInstance();;
     public RecentConversationsAdapter(List<ChatMessage> chatMessages, ConversationListener conversationListener) {
         this.chatMessages = chatMessages;
         this.conversationListener = conversationListener;
@@ -63,6 +74,14 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
             } else {
                 binding.textRecentMessage.setTypeface(null, Typeface.NORMAL);
             }
+            if (chatMessage.muted) {
+                binding.notificationButton.setVisibility(View.GONE);
+            }
+            binding.notificationButton.setOnClickListener(v -> {
+                User user = new User();
+                user.id = chatMessage.conversationId;
+                conversationListener.OnMuteClicked(user);
+            });
             binding.getRoot().setOnClickListener(v -> {
                 User user = new User();
                 user.id = chatMessage.conversationId;

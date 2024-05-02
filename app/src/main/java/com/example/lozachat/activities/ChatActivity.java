@@ -175,25 +175,34 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
             conversation.put(Constants.KEY_TIMESTAMP, new Date());
             addConversation(conversation);
         }
+
         if (!isReceiverAvailable) {
-            try {
-                JSONArray tokens = new JSONArray();
-                tokens.put(receiverUser.token);
+            database.collection(Constants.KEY_MUTE_STATUS)
+                    .whereEqualTo(Constants.KEY_USER_ID, receiverUser.id)
+                    .whereArrayContains(Constants.KEY_MUTED, preferenceManager.getString(Constants.KEY_USER_ID))
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful() && task.getResult().isEmpty()) {
+                            try {
+                                JSONArray tokens = new JSONArray();
+                                tokens.put(receiverUser.token);
 
-                JSONObject data = new JSONObject();
-                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
-                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
-                data.put(Constants.KEY_MESSAGE, messageToSend);
+                                JSONObject data = new JSONObject();
+                                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
+                                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                                data.put(Constants.KEY_MESSAGE, messageToSend);
 
-                JSONObject body = new JSONObject();
-                body.put(Constants.REMOTE_MSG_DATA, data);
-                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+                                JSONObject body = new JSONObject();
+                                body.put(Constants.REMOTE_MSG_DATA, data);
+                                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
 
-                sendNotification(body.toString());
-            } catch (Exception exception) {
-                showToast(exception.getMessage());
-            }
+                                sendNotification(body.toString());
+                            } catch (Exception exception) {
+                                showToast(exception.getMessage());
+                            }
+                        }
+                    });
         }
         binding.inputMessage.setText(null);
     }
@@ -274,7 +283,7 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
         if (error != null) {
             return;
         }
-        if (value != null) {
+        if (value != null && !value.getMetadata().isFromCache()) {
             int count = chatMessages.size();
             for (DocumentChange documentChange: value.getDocumentChanges()) {
                 if (documentChange.getType() == DocumentChange.Type.ADDED) {

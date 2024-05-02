@@ -58,4 +58,6 @@ public class Constants {
         }
         return remoteMsgHeaders;
     }
+    public static final String KEY_MUTE_STATUS = "mute_status";
+    public static final String KEY_MUTED = "muted";
 }

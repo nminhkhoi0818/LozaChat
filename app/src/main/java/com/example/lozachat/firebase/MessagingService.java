@@ -48,7 +48,6 @@ public class MessagingService extends FirebaseMessagingService {
         builder.setSmallIcon(R.drawable.ic_notification_fake);
         builder.setContentTitle(user.name);
         builder.setContentText(remoteMessage.getData().get(Constants.KEY_MESSAGE));
-        //
         builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
         builder.setContentIntent(pendingIntent);
         builder.setAutoCancel(true);

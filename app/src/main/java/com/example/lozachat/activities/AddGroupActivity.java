@@ -73,7 +73,7 @@ public class AddGroupActivity extends AppCompatActivity implements UserListener 
             return;
         }
         database.collection(Constants.KEY_COLLECTION_USERS)
-                .whereIn(FieldPath.documentId(), preferenceManager.getArrayList(Constants.KEY_FRIENDS_LIST))
+                .whereArrayContains(Constants.KEY_FRIENDS_LIST, preferenceManager.getString(Constants.KEY_USER_ID))
                 .get()
                 .addOnCompleteListener(task -> {
                     loading(false);

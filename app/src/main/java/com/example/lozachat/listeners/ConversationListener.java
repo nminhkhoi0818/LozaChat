@@ -4,5 +4,5 @@ import com.example.lozachat.models.User;
 
 public interface ConversationListener {
     void OnConversationClicked(User user);
-    void OnMuteClicked(User user);
+    void OnMuteClicked(User user, Boolean mutedStatus);
 }

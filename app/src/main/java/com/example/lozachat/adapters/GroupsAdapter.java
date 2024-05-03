@@ -2,6 +2,7 @@ package com.example.lozachat.adapters;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Base64;
 import android.util.Log;
@@ -73,11 +74,13 @@ public class GroupsAdapter extends RecyclerView.Adapter<GroupsAdapter.GroupViewH
                 binding.textRecentMessage.setTypeface(null, Typeface.NORMAL);
             }
             if (group.muted) {
-                binding.notificationButton.setVisibility(View.GONE);
+                binding.notificationButton.setColorFilter(Color.GREEN);
+            } else {
+                binding.notificationButton.setColorFilter(Color.RED);
             }
             binding.imageProfile.setImageBitmap(getUserImage(group.image));
             binding.notificationButton.setOnClickListener(v -> {
-                groupListener.OnGroupMuteClicked(group);
+                groupListener.OnGroupMuteClicked(group, group.muted);
             });
             binding.getRoot().setOnClickListener(v -> groupListener.onGroupClicked(group));
         }

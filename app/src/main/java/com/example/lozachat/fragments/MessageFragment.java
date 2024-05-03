@@ -253,29 +253,14 @@ public class MessageFragment extends Fragment implements ConversationListener, G
     }
 
     @Override
-    public void OnMuteClicked(User user) {
-        DocumentReference ref = database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(user.id);
-        ref.update(Constants.KEY_MUTED, FieldValue.arrayUnion(preferenceManager.getString(Constants.KEY_USER_ID)));
-//        database.collection(Constants.KEY_COLLECTION_USERS)
-//                .whereEqualTo(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
-//                .get()
-//                .addOnCompleteListener(task -> {
-//                   if (task.isSuccessful()) {
-//                       if (task.getResult().isEmpty()) {
-//                           HashMap<String, Object> muted = new HashMap<>();
-//                           muted.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-//                           ArrayList<String> users = new ArrayList<>();
-//                           users.add(user.id);
-//                           muted.put(Constants.KEY_MUTED, users);
-//                           database.collection(Constants.KEY_MUTE_STATUS).add(muted);
-//                       } else {
-//                           DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-//                           DocumentReference documentReference = database.collection(Constants.KEY_MUTE_STATUS).document(documentSnapshot.getId());
-//                           documentReference.update(Constants.KEY_MUTED, FieldValue.arrayUnion(user.id));
-//                       }
-//                   }
-//                });
-
+    public void OnMuteClicked(User user, Boolean mutedStatus) {
+        if (!mutedStatus) {
+            DocumentReference ref = database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(user.id);
+            ref.update(Constants.KEY_MUTED, FieldValue.arrayUnion(preferenceManager.getString(Constants.KEY_USER_ID)));
+        } else {
+            DocumentReference ref = database.collection(Constants.KEY_COLLECTION_CONVERSATIONS).document(user.id);
+            ref.update(Constants.KEY_MUTED, FieldValue.arrayRemove(preferenceManager.getString(Constants.KEY_USER_ID)));
+        }
     }
 
     @Override
@@ -288,8 +273,13 @@ public class MessageFragment extends Fragment implements ConversationListener, G
     }
 
     @Override
-    public void OnGroupMuteClicked(Group group) {
-        DocumentReference ref = database.collection(Constants.KEY_COLLECTION_GROUP).document(group.id);
-        ref.update(Constants.KEY_MUTED, FieldValue.arrayUnion(preferenceManager.getString(Constants.KEY_USER_ID)));
+    public void OnGroupMuteClicked(Group group, Boolean mutedStatus) {
+        if (!mutedStatus) {
+            DocumentReference ref = database.collection(Constants.KEY_COLLECTION_GROUP).document(group.id);
+            ref.update(Constants.KEY_MUTED, FieldValue.arrayUnion(preferenceManager.getString(Constants.KEY_USER_ID)));
+        } else {
+            DocumentReference ref = database.collection(Constants.KEY_COLLECTION_GROUP).document(group.id);
+            ref.update(Constants.KEY_MUTED, FieldValue.arrayRemove(preferenceManager.getString(Constants.KEY_USER_ID)));
+        }
     }
 }

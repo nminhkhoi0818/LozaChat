@@ -2,6 +2,7 @@ package com.example.lozachat.adapters;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -75,12 +76,14 @@ public class RecentConversationsAdapter extends RecyclerView.Adapter<RecentConve
                 binding.textRecentMessage.setTypeface(null, Typeface.NORMAL);
             }
             if (chatMessage.muted) {
-                binding.notificationButton.setVisibility(View.GONE);
+                binding.notificationButton.setColorFilter(Color.GREEN);
+            } else {
+                binding.notificationButton.setColorFilter(Color.RED);
             }
             binding.notificationButton.setOnClickListener(v -> {
                 User user = new User();
                 user.id = chatMessage.chatId;
-                conversationListener.OnMuteClicked(user);
+                conversationListener.OnMuteClicked(user, chatMessage.muted);
             });
             binding.getRoot().setOnClickListener(v -> {
                 User user = new User();

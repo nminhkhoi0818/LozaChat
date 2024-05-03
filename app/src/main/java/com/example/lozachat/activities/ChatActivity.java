@@ -161,6 +161,34 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
         database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
         if (conversationId != null) {
             updateConversation(binding.inputMessage.getText().toString());
+            if (!isReceiverAvailable) {
+                database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
+                        .whereEqualTo(FieldPath.documentId(), conversationId)
+                        .whereArrayContains(Constants.KEY_MUTED, receiverUser.id)
+                        .get()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful() && task.getResult().isEmpty()) {
+                                try {
+                                    JSONArray tokens = new JSONArray();
+                                    tokens.put(receiverUser.token);
+
+                                    JSONObject data = new JSONObject();
+                                    data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+                                    data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
+                                    data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                                    data.put(Constants.KEY_MESSAGE, messageToSend);
+
+                                    JSONObject body = new JSONObject();
+                                    body.put(Constants.REMOTE_MSG_DATA, data);
+                                    body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
+
+                                    sendNotification(body.toString());
+                                } catch (Exception exception) {
+//                                showToast(exception.getMessage());
+                                }
+                            }
+                        });
+            }
         } else {
             HashMap<String, Object> conversation = new HashMap<>();
             conversation.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
@@ -176,34 +204,6 @@ public class ChatActivity extends BaseActivity implements ChatListener, GptChatb
             addConversation(conversation);
         }
 
-        if (!isReceiverAvailable) {
-            database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                    .whereEqualTo(FieldPath.documentId(), conversationId)
-                    .whereArrayContains(Constants.KEY_MUTED, receiverUser.id)
-                    .get()
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful() && task.getResult().isEmpty()) {
-                            try {
-                                JSONArray tokens = new JSONArray();
-                                tokens.put(receiverUser.token);
-
-                                JSONObject data = new JSONObject();
-                                data.put(Constants.KEY_USER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
-                                data.put(Constants.KEY_NAME, preferenceManager.getString(Constants.KEY_NAME));
-                                data.put(Constants.KEY_FCM_TOKEN, preferenceManager.getString(Constants.KEY_FCM_TOKEN));
-                                data.put(Constants.KEY_MESSAGE, messageToSend);
-
-                                JSONObject body = new JSONObject();
-                                body.put(Constants.REMOTE_MSG_DATA, data);
-                                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS, tokens);
-
-                                sendNotification(body.toString());
-                            } catch (Exception exception) {
-//                                showToast(exception.getMessage());
-                            }
-                        }
-                    });
-        }
         binding.inputMessage.setText(null);
     }
     private void listenAvailabilityOfReceiver() {
